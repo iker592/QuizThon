@@ -73,6 +73,202 @@ placeholder="El mismo de antes"> </td> <td class="error">
 %(email_error)s </td> </tr> </table> <input
 type="submit"> </form> </body> </html>'''
 
+
+insertquestion_form='''
+<html> 
+<head> 
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
+	<title>Introduce una pregunta:</title> 
+	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script>
+		function validarEmail(email)
+		{$("#erroremail").html('Procesando...');
+		$.ajax("/comprobar",
+			{"type": "post",
+			"data":{"email":email},
+			"success": function(result) {
+			$("#erroremail").html(result);},
+			"error": function(result)
+					{ console.error("Se ha producido un error:", result);}, "async": true })}
+	</script>
+</head> 
+<body> 
+	<h1>Adding a new Question</h1> 
+	<h2>Fill and submit the form please:</h2> 
+	<form method="post"> 
+		<table> 
+			<tr> <td class="label">Question</td> 
+				<td> <input type="text" name="question" value="%(question)s" placeholder="Your question ..."> </td> 
+				<td class="error"> %(question_error)s </td> 
+			</tr> 
+			<tr> <td class="label"> First Option </td> 
+				<td> <input type="text" name="firstopt" value="%(firstopt)s"> </td> 
+				<td class="error"> %(firstopt_error)s </td>
+			</tr> 
+			<tr> <td class="label"> Second Option </td>
+				<td> <input type="text" name="secondopt" value="%(secondopt)s"> </td> 
+				<td class="error"> %(secondopt_error)s </td> 
+			</tr>
+			<tr> <td class="label"> Third Option </td>
+				<td> <input type="text" name="thirdopt" value="%(thirdopt)s"> </td> 
+				<td class="error"> %(thirdopt_error)s </td> 
+			</tr> 
+		</table> 
+		<input type="submit"> 
+	</form> 
+</body> 
+</html>'''
+
+answerquestion_form='''
+<html> 
+<head> 
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
+	<title>Answer the question:</title> 
+	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script>
+		function validarEmail(email)
+		{$("#erroremail").html('Procesando...');
+		$.ajax("/comprobar",
+			{"type": "post",
+			"data":{"email":email},
+			"success": function(result) {
+			$("#erroremail").html(result);},
+			"error": function(result)
+					{ console.error("Se ha producido un error:", result);}, "async": true })}
+	</script>
+</head> 
+<body> 
+	<h1>Answering a Question</h1> 
+	<h2>Answer the question please:</h2> 
+	<form method="post"> 
+		<table> 
+			<tr> <td class="label">%(question)s</td> 
+			</tr> 
+			<tr> <td class="label"> 1) </td> 
+				<td> <input type="radio" name="opt" value="%(firstopt)s" checked>%(firstopt)s <br> </td> 
+				<td class="error"> %(firstopt_error)s </td>
+			</tr> 
+			<tr> <td class="label"> 2) </td>
+				<td> <input type="radio" name="opt" value="%(secondopt)s"> %(secondopt)s<br></td> 
+				<td class="error"> %(secondopt_error)s </td> 
+			</tr>
+			<tr> <td class="label"> 3) </td>
+				<td> <input type="radio" name="opt" value="%(thirdopt)s"> %(thirdopt)s</td> 
+				<td class="error"> %(thirdopt_error)s </td> 
+			</tr> 
+		</table> 
+		<input type="submit"> 
+	</form> 
+</body> 
+</html>'''
+
+
+class AnswerHandler(session_module.BaseSessionHandler):
+
+	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
+		self.response.out.write(answerquestion_form % {"question" :
+		question,"firstopt" : firstopt,
+		"secondopt" : secondopt,"thirdopt" : thirdopt,
+		"firstopt_error" : firstopt_error,
+		"secondopt_error" : secondopt_error,
+		"thirdopt_error" : thirdopt_error})
+
+	def get(self):
+		def escape_html(s):
+			return cgi.escape(s, quote=True)
+		question=""
+		questionQuery= Question.query(Question.question=="Which is the first president of the USA?")
+		if questionQuery.count()==1:
+			question=questionQuery.get()
+			firstopt_error = ""
+			secondopt_error = "" 
+			thirdopt_error = ""
+			sani_question = escape_html(question.question)
+			sani_firstopt = escape_html(question.first)
+			sani_secondopt = escape_html(question.second)
+			sani_thirdopt = escape_html(question.third)
+			self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt, firstopt_error, secondopt_error, thirdopt_error)
+		else:
+			self.write_form()
+			self.response.out.write ("No fak were given")
+
+	def post(self):
+		questionQuery= Question.query(Question.question=="Which is the first president of the USA?")
+		if questionQuery.count()==1:
+			question=questionQuery.get()
+			if question.first==self.request.get('opt')	or question.second==self.request.get('opt') or question.third==self.request.get('opt'):
+				self.write_form()
+				self.response.out.write ("yay!")
+			else:
+				self.write_form()
+				self.response.out.write ("duuude...")
+
+class InsertHandler(session_module.BaseSessionHandler):
+
+	def write_form (self, question="", firstopt="", secondopt="",
+	thirdopt="", question_error="", firstopt_error="",
+	secondopt_error="", thirdopt_error=""):
+		self.response.out.write(insertquestion_form % {"question" :
+		question,"firstopt" : firstopt,
+		"secondopt" : secondopt,"thirdopt" : thirdopt,
+		"question_error" : question_error,
+		"firstopt_error" : firstopt_error,
+		"secondopt_error" : secondopt_error,
+		"thirdopt_error" : thirdopt_error})
+
+	def get(self):
+		self.write_form()
+
+	def post(self):
+		def escape_html(s):
+			return cgi.escape(s, quote=True)
+		QUESTION_RE = re.compile(r"^[a-zA-Z0-9_-]+( [a-zA-Z0-9_?]+)*$")
+		def valid_question(question):
+			return QUESTION_RE.match(question)
+		u_question = self.request.get('question')
+		u_firstopt = self.request.get('firstopt')
+		u_secondopt = self.request.get('secondopt')
+		u_thirdopt = self.request.get('thirdopt')
+		sani_question = escape_html(u_question)
+		sani_firstopt = escape_html(u_firstopt)
+		sani_secondopt = escape_html(u_secondopt)
+		sani_thirdopt = escape_html(u_thirdopt)
+		question_error = ""
+		firstopt_error = ""
+		secondopt_error = "" 
+		thirdopt_error = ""
+		question=""
+		error = False
+		if not valid_question(u_question):
+			question_error = "Wrong type question!"
+			error = True
+		if not valid_question(u_firstopt):
+			firstopt_error = "Wrong type of answer in first option!"
+			error = True
+		if not valid_question(u_secondopt):
+			secondopt_error = "Wrong type of answer in second option!"
+			error = True
+		if not valid_question(u_thirdopt):
+			thirdopt_error = "Wrong type of answer in third option!"
+			error = True
+		if error:
+			self.write_form(sani_question, sani_firstopt, sani_secondopt, thirdopt_error,question_error, firstopt_error, secondopt_error, thirdopt_error)
+		else:
+			question= Question.query(Question.question==u_question).count()
+			if question==0:
+				q=Question()
+				q.question=u_question
+				q.first=u_firstopt
+				q.second=u_secondopt
+				q.third=u_thirdopt
+				q.put()
+				self.redirect("/welcome?username=%s" "Poner username de la sesion")
+			else:
+				self.write_form(sani_question, sani_firstopt, sani_secondopt, thirdopt_error,question_error, firstopt_error, secondopt_error, thirdopt_error)
+				self.response.out.write ("Question: %s <p> was already inserted" %u_question)
+
 class ComprobarEmail(webapp2.RequestHandler):
 	def post(self):
 		user = Visitante.query(Visitante.email==self.request.get('email')).count()
@@ -81,12 +277,19 @@ class ComprobarEmail(webapp2.RequestHandler):
 		else:
 			self.response.out.write("<span style='color:red'>Este email ya esta registrado o no es valido</span>")
 
-
 class Visitante(ndb.Model):
 	nombre=ndb.StringProperty()
 	email=ndb.StringProperty()
 	password=ndb.StringProperty(indexed=True)
 	creado=ndb.DateTimeProperty(auto_now_add=True)
+
+class Question(ndb.Model):
+	question=ndb.StringProperty()
+	first=ndb.StringProperty()
+	second=ndb.StringProperty()
+	third=ndb.StringProperty()
+	creado=ndb.DateTimeProperty(auto_now_add=True)
+
 
 class SignupHandler(session_module.BaseSessionHandler):
 
@@ -196,5 +399,7 @@ app = webapp2.WSGIApplication([
     ('/signup', SignupHandler),
     ('/cerrarsesion', CerrarSesionHandler),
     ('/welcome',WelcomeHandler),
+    ('/insert', InsertHandler),
+    ('/answer', AnswerHandler),
     ('/comprobar',ComprobarEmail)
 ], config=session_module.myconfig_dict, debug=True)
