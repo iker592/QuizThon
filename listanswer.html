@@ -1,0 +1,42 @@
+<html> 
+<head> 
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
+	<title>Answer the question:</title> 
+	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script>
+
+		function fillQuestion(quest)
+		{$("#erroremail").html('Procesando...');
+		$.ajax("/fillanswer",
+			{"type": "post",
+			"data":{"question":quest},
+			"success": function(result) {
+			$("#erroremail").html(result);
+
+			$("#result").html("");},
+			"error": function(result)
+					{ console.error("Se ha producido un error:", result);}, "async": true })}
+	</script>
+
+</head> 
+<body> 
+	<div="greeting" position="absolute;" right="0px;" top="0px;"></div>
+	<h1>Answering a Question</h1> 
+	<h2>Select question please:</h2> 
+	<form method="get" action="/result">
+      <select name="questions" onchange="fillQuestion(this.value)"> 
+      {% for item in mylist %}
+        {% if item %}
+          <option value="{{item.question}}">{{item.question}}</option>
+        {% else %}
+           <option value="<your_blank>"></option>
+        {% endif %}
+      {% endfor %}
+      </select>
+      <div id="erroremail"></div>
+      <input type="submit">
+	</form> 
+	<h4 id="result">{{result}}</h4>
+</body> 
+</html>

@@ -17,7 +17,8 @@
 import webapp2
 import re
 import cgi
-
+import jinja2
+import os
 from google.appengine.api import users
 
 import session_module
@@ -26,17 +27,45 @@ from webapp2_extras import sessions
 
 from google.appengine.ext import ndb
 
+JINJA_ENVIRONMENT = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    extensions=['jinja2.ext.autoescape'],
+    autoescape=True)
+main_form=''' 
+<!DOCTYPE html>
+<html>
+<head> 
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+</head> 
+<body>
+	<button type="button" onclick="window.location.href='/login'">Login</button></br> 
+	<button type="button" onclick="window.location.href='/signup'">Sign Up</button> </br> 
+	<button type="button" onclick="window.location.href='/prueba'">Take a Quiz!</button> </br> 
+</body>
+</html>
+'''
+
+manage_form=''' 
+<!DOCTYPE html>
+<html>
+<head> 
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+</head> 
+
+<body>
+	<button type="button" onclick="window.location.href='/cerrarsesion'">Logout</button> </br> 
+	<button type="button" onclick="window.location.href='/insert'">Add a question</button> </br> 
+	<button type="button" onclick="window.location.href='/prueba'">Take a Quiz!</button> </br> 
+</body>
+</html>
+'''
+
 signup_form='''<html> <head> <link type="text/css" rel="stylesheet"
 href="/stylesheets/main.css" /> <title>Introduzca sus datos:</title> <style
 type="text/css"> .label {text-align: right} .error {color: red} </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <script>
-$(document).ready(function(){
-    $("button").click(function(){
-        $("p").hide();
-    });
-});
 
 function validarEmail(email)
 {$("#erroremail").html('Procesando...');
@@ -49,30 +78,68 @@ $.ajax("/comprobar",
 			{ console.error("Se ha producido un error:", result);}, "async": true })}
 </script>
 
-</head> <body> 
-
-<p>This is a paragraph.</p>
-<p>This is another paragraph.</p>
-<button>Click me</button>
-
-<h1>DSSW-Tarea 2</h1> <h2>Rellene los campos por
-favor:</h2> <form method="post"> <table> <tr> <td
-class="label"> Nombre de usuario </td> <td> <input
+</head> 
+<body> 
+<h1>Sign up</h1> <h2>Please fill up the blanks:</h2> <form method="post"> <table> <tr> <td
+class="label"> Username </td> <td> <input
 type="text" name="username" value="%(username)s" placeholder="Tu nombre
 ..."> </td> <td class="error"> %(username_error)s
 </td> </tr> <tr> <td class="label"> Password
 </td> <td> <input type="password" name="password"
 value="%(password)s" autocomplete="off"> </td> <td
 class="error"> %(password_error)s </td> </td>
-</tr> <tr> <td class="label"> Repetir Password </td>
+</tr> <tr> <td class="label"> Repeat Password </td>
 <td> <input type="password" name="verify" value="%(verify)s"
 placeholder="El mismo de antes"> </td> <td class="error">
 %(verify_error)s </td> </tr> 
 <tr> <td class="label">Email </td> <td> <input type="text" name="email" id="email" onBlur="validarEmail(this.value)" value="%(email)s"><div id="erroremail"></div> 
 </td> <td class="error">
-%(email_error)s </td> </tr> </table> <input
-type="submit"> </form> </body> </html>'''
+%(email_error)s </td> </tr> 
+</table> 
+<input type="submit"> 
+</form> 
+</body> 
+</html>'''
 
+login_form='''
+<html> 
+	<head> 
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
+	<title>Introduzca sus datos:</title> 
+	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script>
+		function validarEmail(email)
+		{$("#erroremail").html('Procesando...');
+		$.ajax("/comprobar",
+			{"type": "post",
+			"data":{"email":email},
+			"success": function(result) {
+			$("#erroremail").html(result);},
+			"error": function(result)
+					{ console.error("Se ha producido un error:", result);}, "async": true })}
+	</script>
+	</head> 
+	<body> 
+	<h1>Login</h1>
+	<h2>Please fill up the blanks:</h2> 
+		<form method="post"> 
+			<table> 
+				<tr> 
+					<td class="label"> Username </td> 
+					<td> <input type="text" name="username" value="%(username)s" placeholder="Tu nombre..."> </td> 
+					<td class="error"> %(username_error)s </td> 
+				</tr> 
+				<tr> <td class="label"> Password </td> 
+					<td> <input type="password" name="password" value="%(password)s" autocomplete="off"> </td> 
+					<td class="error"> %(password_error)s </td> </td>
+				</tr>  
+
+			</table> 
+			<input type="submit"> 
+		</form>
+	</body> 
+</html>'''
 
 insertquestion_form='''
 <html> 
@@ -165,21 +232,125 @@ answerquestion_form='''
 </html>'''
 
 
+listquestion_form='''
+<html> 
+<head> 
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
+	<title>Answer the question:</title> 
+	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
+</head> 
+<body> 
+	<h1>Answering a Question</h1> 
+	<h2>Answer the question please:</h2> 
+	<form method="post"> 
+		{% for greeting in greetings %}
+
+		<input type="submit"> 
+	</form> 
+</body> 
+</html>'''
+class ResultHandler(session_module.BaseSessionHandler):
+	def get(self):
+		questionQuery= Question.query(Question.question==self.request.get('questions'))
+		if questionQuery.count()==1:
+			question=questionQuery.get()
+			if question.first==self.request.get('opt')	or question.second==self.request.get('opt') or question.third==self.request.get('opt'):
+				#self.write_form()
+				self.response.out.write ("yay!")
+				self.redirect("/prueba?result=Correct answer!!! Select another one or leave whenever you want.")
+			else:
+				#self.write_form()
+				self.response.out.write ("duuude...")
+				self.redirect("/prueba?result=Wrong answer :( Try again or leave whenever you want!")
+
+
+class FillAnswerHandler(webapp2.RequestHandler):
+	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
+			tem_values = {"question" : question,"firstopt" : firstopt, "secondopt" : secondopt,"thirdopt" : thirdopt,"firstopt_error" : firstopt_error,	"secondopt_error" : secondopt_error,"thirdopt_error" : thirdopt_error}
+			template = JINJA_ENVIRONMENT.get_template('fillanswer.html')
+			self.response.write(template.render(tem_values))
+	def post(self):
+		def escape_html(s):
+			return cgi.escape(s, quote=True)
+		#self.response.out.write("<span style='color:red'>Este es valido</span>")
+	#	questionQuery=Question.query(Question.question=="Which is the first president of the USA?")#self.request.get('question')
+		question=""
+		questionQuery= Question.query(Question.question==self.request.get('question'))
+		if questionQuery.count()==1:
+			question=questionQuery.get()
+			firstopt_error = ""
+			secondopt_error = "" 
+			thirdopt_error = ""
+			sani_question = escape_html(question.question)
+			sani_firstopt = escape_html(question.first)
+			sani_secondopt = escape_html(question.second)
+			sani_thirdopt = escape_html(question.third)
+			self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt, firstopt_error, secondopt_error, thirdopt_error)
+		else:
+			self.response.out.write ("damn no questions bruh")
+
+
+
+class borrar(session_module.BaseSessionHandler):
+	def write_form (self, mylist,result):
+		tem_values = {"mylist" : mylist, "result":result}
+		template = JINJA_ENVIRONMENT.get_template('listanswer.html')
+		self.response.write(template.render(tem_values))
+	def get(self):
+		user = users.get_current_user()
+		if user:
+			greeting = ('Logged as: %s <a href="%s">Finish session </a><br>' %(user.nickname(), users.create_logout_url('/')))
+			result=self.request.get('result')
+			questionQuery= Question.query()
+			self.response.out.write('<h2>%s</h2>' %greeting)  	
+			self.write_form(questionQuery,result)
+
+		else:
+			self.redirect(users.create_login_url(self.request.uri))
+#	def post(self):
+		#question=self.request.get('questions')
+
+		#self.redirect("/answer?question=%s" %question)
+
+class LoginHandler(session_module.BaseSessionHandler):
+	def write_form (self, username="", password="", verify="",
+	email="", username_error="", password_error="",
+	verify_error="", email_error=""):
+		self.response.out.write(login_form % {"username" :
+		username,"password" : password,
+		"verify" : verify,"email" : email,
+		"username_error" : username_error,
+		"password_error" : password_error,
+		"verify_error" : verify_error,
+		"email_error" : email_error})
+
+	def get(self):
+		self.write_form()
+
+	def post(self):
+		user_username = self.request.get('username')
+		user_password = self.request.get('password')
+		user= Visitante.query(Visitante.nombre==user_username, Visitante.password==user_password).count()
+		if user==1:
+			self.redirect("/manage?username=%s" % user_username)
+		else:
+			self.redirect('/login')
+
+
 class AnswerHandler(session_module.BaseSessionHandler):
 
 	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
-		self.response.out.write(answerquestion_form % {"question" :
-		question,"firstopt" : firstopt,
-		"secondopt" : secondopt,"thirdopt" : thirdopt,
-		"firstopt_error" : firstopt_error,
-		"secondopt_error" : secondopt_error,
-		"thirdopt_error" : thirdopt_error})
+		
+		tem_values = {"question" : question,"firstopt" : firstopt, "secondopt" : secondopt,"thirdopt" : thirdopt,"firstopt_error" : firstopt_error,	"secondopt_error" : secondopt_error,"thirdopt_error" : thirdopt_error}
+
+		template = JINJA_ENVIRONMENT.get_template('answer.html')
+		self.response.write(template.render(tem_values))
 
 	def get(self):
 		def escape_html(s):
 			return cgi.escape(s, quote=True)
 		question=""
-		questionQuery= Question.query(Question.question=="Which is the first president of the USA?")
+		questionQuery= Question.query(Question.question=="Which is the first president of the USA?")#self.request.get('question'))
 		if questionQuery.count()==1:
 			question=questionQuery.get()
 			firstopt_error = ""
@@ -203,13 +374,11 @@ class AnswerHandler(session_module.BaseSessionHandler):
 				self.response.out.write ("yay!")
 			else:
 				self.write_form()
-				self.response.out.write ("duuude...")
+				self.response.out.write (self.request.get('opt'))
 
 class InsertHandler(session_module.BaseSessionHandler):
 
-	def write_form (self, question="", firstopt="", secondopt="",
-	thirdopt="", question_error="", firstopt_error="",
-	secondopt_error="", thirdopt_error=""):
+	def write_form (self, question="", firstopt="", secondopt="",thirdopt="", question_error="", firstopt_error="",	secondopt_error="", thirdopt_error=""):
 		self.response.out.write(insertquestion_form % {"question" :
 		question,"firstopt" : firstopt,
 		"secondopt" : secondopt,"thirdopt" : thirdopt,
@@ -264,10 +433,11 @@ class InsertHandler(session_module.BaseSessionHandler):
 				q.second=u_secondopt
 				q.third=u_thirdopt
 				q.put()
-				self.redirect("/welcome?username=%s" "Poner username de la sesion")
+				self.write_form()
+				self.response.out.write ("<h3>Question: %s  added, add as many as you want</h3>" %u_question)
 			else:
 				self.write_form(sani_question, sani_firstopt, sani_secondopt, thirdopt_error,question_error, firstopt_error, secondopt_error, thirdopt_error)
-				self.response.out.write ("Question: %s <p> was already inserted" %u_question)
+				self.response.out.write ("<h3>Question: %s <p> was already inserted</h3>" %u_question)
 
 class ComprobarEmail(webapp2.RequestHandler):
 	def post(self):
@@ -355,7 +525,7 @@ class SignupHandler(session_module.BaseSessionHandler):
 				u.email=user_email
 				u.password=user_password
 				u.put()
-				self.redirect("/welcome?username=%s" % user_username)
+				self.redirect("/manage?username=%s" % user_username)
 			else:
 				self.write_form(sani_username, sani_password, sani_verify, sani_email,username_error, password_error, verify_error, email_error)
 				self.response.out.write ("Kaixo: %s <p> Ya estabas fichado" %user_username)
@@ -366,12 +536,13 @@ class WelcomeHandler(session_module.BaseSessionHandler):
 		greeting = ('Saludos, %s <p><a href="%s">Sign out </a><br>' %(self.request.get('username'), users.create_logout_url('/')))
 		self.response.out.write('<html><body><h1>%s</h1></body></html>' %greeting) 
 
-class MainHandler(session_module.BaseSessionHandler):
+class PrincipalHandler(session_module.BaseSessionHandler):
 	def get(self):
 		user = users.get_current_user()
 		if user:
-			greeting = ('Saludos, %s <p><a href="%s">Sign out </a><br>' %(user.nickname(), users.create_logout_url('/')))
-			self.response.out.write('<html><body><h1>%s</h1></body></html>' %greeting)  
+			greeting = ('Hi, %s <p><a href="%s">Finish session </a><br>' %(user.nickname(), users.create_logout_url('/')))
+			self.response.out.write(answerquestion_form)
+			self.response.out.write('<h1>%s</h1>' %greeting) 
 		else:
 			self.redirect(users.create_login_url(self.request.uri))
 class PruebaHandler(session_module.BaseSessionHandler):
@@ -392,14 +563,35 @@ class CerrarSesionHandler(session_module.BaseSessionHandler):
 		for k in self.session.keys():
 			del self.session[k]
 			self.response.out.write ("Borrada la sesion ...")
-		self.response.out.write("<p><h2><a href='/prueba'> Ir a inicio ...</a></h2>")
+		self.response.out.write ("<h2>Goodbye!</h2>")
+		self.response.out.write("<p><h2><a href='/'> Go back Home ...</a></h2>")
+
+class MainHandler(session_module.BaseSessionHandler):
+	def write_form (self):
+		self.response.out.write(main_form)
+	def get(self):
+		self.write_form()
+
+class ManageHandler(session_module.BaseSessionHandler):
+	def write_form (self):
+		self.response.out.write(manage_form)
+	def get(self):
+		greeting = ('Hi, %s! <p>' %(self.request.get('username')))
+		self.response.out.write('<h3>%s</h3>' %greeting)
+		self.write_form()
+
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/prueba', PruebaHandler),
+    ('/manage', ManageHandler),
+    ('/main', PrincipalHandler),
+    ('/prueba', borrar),
     ('/signup', SignupHandler),
+    ('/login', LoginHandler),
     ('/cerrarsesion', CerrarSesionHandler),
     ('/welcome',WelcomeHandler),
     ('/insert', InsertHandler),
     ('/answer', AnswerHandler),
+    ('/result',ResultHandler),
+    ('/fillanswer', FillAnswerHandler),
     ('/comprobar',ComprobarEmail)
 ], config=session_module.myconfig_dict, debug=True)
