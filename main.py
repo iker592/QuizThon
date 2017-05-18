@@ -313,20 +313,13 @@ class borrar(session_module.BaseSessionHandler):
 		#self.redirect("/answer?question=%s" %question)
 
 class LoginHandler(session_module.BaseSessionHandler):
-	def write_form (self, username="", password="", verify="",
-	email="", username_error="", password_error="",
-	verify_error="", email_error=""):
-		self.response.out.write(login_form % {"username" :
-		username,"password" : password,
-		"verify" : verify,"email" : email,
-		"username_error" : username_error,
-		"password_error" : password_error,
-		"verify_error" : verify_error,
-		"email_error" : email_error})
-
+	def write_form (self, username="", password="", verify="", email="", username_error="", password_error="", verify_error="", email_error=""):
+		#self.response.out.write(login_form % {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error})
+		tem_values = {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error}
+		template = JINJA_ENVIRONMENT.get_template('login.html')
+		self.response.write(template.render(tem_values))
 	def get(self):
 		self.write_form()
-
 	def post(self):
 		user_username = self.request.get('username')
 		user_password = self.request.get('password')
@@ -462,21 +455,13 @@ class Question(ndb.Model):
 
 
 class SignupHandler(session_module.BaseSessionHandler):
-
-	def write_form (self, username="", password="", verify="",
-	email="", username_error="", password_error="",
-	verify_error="", email_error=""):
-		self.response.out.write(signup_form % {"username" :
-		username,"password" : password,
-		"verify" : verify,"email" : email,
-		"username_error" : username_error,
-		"password_error" : password_error,
-		"verify_error" : verify_error,
-		"email_error" : email_error})
-
+	def write_form (self, username="", password="", verify="", email="", username_error="", password_error="", verify_error="", email_error=""):
+		#self.response.out.write(login_form % {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error})
+		tem_values = {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error}
+		template = JINJA_ENVIRONMENT.get_template('signup.html')
+		self.response.write(template.render(tem_values))
 	def get(self):
 		self.write_form()
-
 	def post(self):
 		def escape_html(s):
 			return cgi.escape(s, quote=True)
@@ -512,6 +497,7 @@ class SignupHandler(session_module.BaseSessionHandler):
 		if not user_verify or not user_password == user_verify:
 			verify_error = "Password no coincide!"
 			error = True
+			self.redirect("/prueba")
 		if not valid_email(user_email):
 			email_error = "Formato de Email incorrecto!"
 			error = True
@@ -527,6 +513,7 @@ class SignupHandler(session_module.BaseSessionHandler):
 				u.put()
 				self.redirect("/manage?username=%s" % user_username)
 			else:
+				self.redirect("/manage")
 				self.write_form(sani_username, sani_password, sani_verify, sani_email,username_error, password_error, verify_error, email_error)
 				self.response.out.write ("Kaixo: %s <p> Ya estabas fichado" %user_username)
 
@@ -579,9 +566,17 @@ class ManageHandler(session_module.BaseSessionHandler):
 		greeting = ('Hi, %s! <p>' %(self.request.get('username')))
 		self.response.out.write('<h3>%s</h3>' %greeting)
 		self.write_form()
+class BootHandler(session_module.BaseSessionHandler):
+	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
+			tem_values = {"question" : question,"firstopt" : firstopt, "secondopt" : secondopt,"thirdopt" : thirdopt,"firstopt_error" : firstopt_error,	"secondopt_error" : secondopt_error,"thirdopt_error" : thirdopt_error}
+			template = JINJA_ENVIRONMENT.get_template('index.html')
+			self.response.write(template.render(tem_values))
+	def get(self):
+		self.write_form()
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
+    ('/bootstrap', BootHandler),
     ('/manage', ManageHandler),
     ('/main', PrincipalHandler),
     ('/prueba', borrar),
