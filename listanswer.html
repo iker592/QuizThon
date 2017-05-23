@@ -19,12 +19,12 @@
 			$("#result").html("");},
 			"error": function(result)
 					{ console.error("There has been an error:", result);}, "async": true })}
-		
-		function fillThemes(quest)
+
+		function fillThemes()
 		{$("#erroremail").html('Processing...');
 		$.ajax("/filltheme",
 			{"type": "post",
-			"data":{"question":quest},
+			"data":{"theme":$('#themes').find(":selected").text()},
 			"success": function(result) {
 			$("#erroremail").html(result);
 
@@ -36,7 +36,7 @@
 		{$("#result").html('Processing...');
 		$.ajax("/checkanswer",
 			{"type": "post",
-			"data":{"ans":$('input[name=opt]:checked').val(), "question":$('#questions').find(":selected").text()},
+			"data":{"ans":$('input[name=opt]:checked').val(), "question":$('#theQ').text()},
 			"success": function(result) {
 			$("#erroremail").html(result);$("#result").html("");},
 			"error": function(result)

@@ -288,7 +288,7 @@ class FillAnswerHandler(webapp2.RequestHandler):
 		if questionQuery.count()==1:
 			question=questionQuery.get()
 			firstopt_error = ""
-			secondopt_error = "" 
+			secondopt_error = ""
 			thirdopt_error = ""
 			sani_question = escape_html(question.question)
 			sani_firstopt = escape_html(question.first)
@@ -298,7 +298,34 @@ class FillAnswerHandler(webapp2.RequestHandler):
 		else:
 			self.response.out.write ("damn no questions bruh")
 
-
+class FillThemeHandler(webapp2.RequestHandler):
+	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
+			tem_values = {"question" : question,"firstopt" : firstopt, "secondopt" : secondopt,"thirdopt" : thirdopt,"firstopt_error" : firstopt_error,	"secondopt_error" : secondopt_error,"thirdopt_error" : thirdopt_error}
+			template = JINJA_ENVIRONMENT.get_template('fillanswer.html')
+			self.response.write(template.render(tem_values))
+	def post(self):
+		def escape_html(s):
+			return cgi.escape(s, quote=True)
+		#self.response.out.write("<span style='color:red'>Este es valido</span>")
+	#	questionQuery=Question.query(Question.question=="Which is the first president of the USA?")#self.request.get('question')
+		question=""
+		questionQuery= Question.query(Question.theme=="Geography") #self.request.get('theme')
+		if questionQuery.count()>0:
+			tope =questionQuery.count()
+			count=0
+			while (count < tope):
+				question=questionQuery.get()
+				count = count + 1
+			firstopt_error = ""
+			secondopt_error = "" 
+			thirdopt_error = ""
+			sani_question = escape_html(question.question)
+			sani_firstopt = escape_html(question.first)
+			sani_secondopt = escape_html(question.second)
+			sani_thirdopt = escape_html(question.third)
+			self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt, firstopt_error, secondopt_error, thirdopt_error)
+		else:
+			self.response.out.write ("damn no questions bruh")
 
 class PlayHandler(session_module.BaseSessionHandler):
 	def write_form (self, mylist,result):
@@ -423,7 +450,7 @@ class CheckAnswerHandler(session_module.BaseSessionHandler):
 		if questionQuery.count()==1:
 			question=questionQuery.get()
 			if question.correct==givenAnswer:
-				self.response.out.write ("<h2>Correct!!!</h2>   <button onClick='checkAnswer()''>Next Question</button>" )
+				self.response.out.write ("<h2>Correct!!!</h2>   <button onClick='fillThemes()''>Next Question</button>" )
 			else: 
 				self.response.out.write ("Sorry, try again...")
 		else:
@@ -457,5 +484,6 @@ app = webapp2.WSGIApplication([
     ('/checkanswer', CheckAnswerHandler),
     ('/result',ResultHandler),
     ('/fillanswer', FillAnswerHandler),
+    ('/filltheme', FillThemeHandler),
     ('/comprobar',ComprobarEmail)
 ], config=session_module.myconfig_dict, debug=True)
