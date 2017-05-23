@@ -2,12 +2,14 @@
 <head> 
 	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
 	<title>Answer the question:</title> 
-	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script>
 
 		function fillQuestion(quest)
-		{$("#erroremail").html('Procesando...');
+		{$("#erroremail").html('Processing...');
 		$.ajax("/fillanswer",
 			{"type": "post",
 			"data":{"question":quest},
@@ -16,27 +18,88 @@
 
 			$("#result").html("");},
 			"error": function(result)
-					{ console.error("Se ha producido un error:", result);}, "async": true })}
+					{ console.error("There has been an error:", result);}, "async": true })}
+		
+		function fillThemes(quest)
+		{$("#erroremail").html('Processing...');
+		$.ajax("/filltheme",
+			{"type": "post",
+			"data":{"question":quest},
+			"success": function(result) {
+			$("#erroremail").html(result);
+
+			$("#result").html("");},
+			"error": function(result)
+					{ console.error("There has been an error:", result);}, "async": true })}
+
+		function checkAnswer()
+		{$("#result").html('Processing...');
+		$.ajax("/checkanswer",
+			{"type": "post",
+			"data":{"ans":$('input[name=opt]:checked').val(), "question":$('#questions').find(":selected").text()},
+			"success": function(result) {
+			$("#erroremail").html(result);$("#result").html("");},
+			"error": function(result)
+					{ console.error("There has been an error:", result);}, "async": true })}
 	</script>
 
 </head> 
 <body> 
+    <div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<nav class="navbar navbar-default" role="navigation">
+				<div class="navbar-header">
+					 
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+						 <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+					</button> <a class="navbar-brand" href="/bootstrap">QuizGame</a>
+				</div>
+				
+				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav">
+
+					</ul>
+
+					<ul class="nav navbar-nav navbar-right">
+					</ul>
+				</div>
+			</nav>
+		</div>
+	</div>
 	<div="greeting" position="absolute;" right="0px;" top="0px;"></div>
-	<h1>Answering a Question</h1> 
-	<h2>Select question please:</h2> 
-	<form method="get" action="/result">
-      <select name="questions" onchange="fillQuestion(this.value)"> 
-      {% for item in mylist %}
-        {% if item %}
-          <option value="{{item.question}}">{{item.question}}</option>
-        {% else %}
-           <option value="<your_blank>"></option>
-        {% endif %}
-      {% endfor %}
-      </select>
-      <div id="erroremail"></div>
-      <input type="submit">
-	</form> 
+	<h2>Select question please:</h2>
+		      <select id="questions" name="questions" onchange="fillQuestion(this.value)"> 
+		      {% for item in mylist %}
+		        {% if item %}
+		          <option value="{{item.question}}">{{item.question}}</option>
+		        {% else %}
+		           <option value="<your_blank>"></option>
+		        {% endif %}
+		      {% endfor %}
+		      </select>
+		      <select id="themes" name="themes" onchange="fillThemes(this.value)"> 
+		      {% for item in mylist %}
+		        {% if item %}
+		          <option value="{{item.theme}}">{{item.theme}}</option>
+		        {% else %}
+		           <option value="<your_blank>"></option>
+		        {% endif %}
+		      {% endfor %}
+		      </select>
+	<div class="login-pagecita">
+		<div class="forma">
+			<div class="login-forma" >
+				<div id="erroremail"></div>
+			</div>
+
+		</div>
+	</div> 
+
 	<h4 id="result">{{result}}</h4>
+</div>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
 </body> 
 </html>

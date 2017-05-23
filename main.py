@@ -180,7 +180,15 @@ insertquestion_form='''
 			<tr> <td class="label"> Third Option </td>
 				<td> <input type="text" name="thirdopt" value="%(thirdopt)s"> </td> 
 				<td class="error"> %(thirdopt_error)s </td> 
+			</tr>
+			<tr> <td class="label"> Theme </td>
+				<td> <input type="text" name="theme" value="%(theme)s"> </td> 
+				<td class="error"> %(theme_error)s </td> 
 			</tr> 
+			<tr> <td class="label"> Correct Option </td>
+				<td> <input type="text" name="correct" value="%(correct)s"> </td> 
+				<td class="error"> %(correct_error)s </td> 
+			</tr>
 		</table> 
 		<input type="submit"> 
 	</form> 
@@ -249,6 +257,8 @@ listquestion_form='''
 	</form> 
 </body> 
 </html>'''
+
+
 class ResultHandler(session_module.BaseSessionHandler):
 	def get(self):
 		questionQuery= Question.query(Question.question==self.request.get('questions'))
@@ -262,7 +272,6 @@ class ResultHandler(session_module.BaseSessionHandler):
 				#self.write_form()
 				self.response.out.write ("duuude...")
 				self.redirect("/prueba?result=Wrong answer :( Try again or leave whenever you want!")
-
 
 class FillAnswerHandler(webapp2.RequestHandler):
 	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
@@ -291,43 +300,28 @@ class FillAnswerHandler(webapp2.RequestHandler):
 
 
 
-class borrar(session_module.BaseSessionHandler):
+class PlayHandler(session_module.BaseSessionHandler):
 	def write_form (self, mylist,result):
 		tem_values = {"mylist" : mylist, "result":result}
 		template = JINJA_ENVIRONMENT.get_template('listanswer.html')
 		self.response.write(template.render(tem_values))
 	def get(self):
-		user = users.get_current_user()
-		if user:
-			greeting = ('Logged as: %s <a href="%s">Finish session </a><br>' %(user.nickname(), users.create_logout_url('/')))
+#		user = users.get_current_user()
+#		if user:
+#			greeting = ('Logged as: %s <a href="%s">Finish session </a><br>' %(user.nickname(), users.create_logout_url('/')))
 			result=self.request.get('result')
+
 			questionQuery= Question.query()
-			self.response.out.write('<h2>%s</h2>' %greeting)  	
+#			self.response.out.write('<h2>%s</h2>' %greeting)  	
 			self.write_form(questionQuery,result)
 
-		else:
-			self.redirect(users.create_login_url(self.request.uri))
+#		else:
+#			self.redirect(users.create_login_url(self.request.uri))
 #	def post(self):
 		#question=self.request.get('questions')
 
 		#self.redirect("/answer?question=%s" %question)
 
-class LoginHandler(session_module.BaseSessionHandler):
-	def write_form (self, username="", password="", verify="", email="", username_error="", password_error="", verify_error="", email_error=""):
-		#self.response.out.write(login_form % {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error})
-		tem_values = {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error}
-		template = JINJA_ENVIRONMENT.get_template('login.html')
-		self.response.write(template.render(tem_values))
-	def get(self):
-		self.write_form()
-	def post(self):
-		user_username = self.request.get('username')
-		user_password = self.request.get('password')
-		user= Visitante.query(Visitante.nombre==user_username, Visitante.password==user_password).count()
-		if user==1:
-			self.redirect("/manage?username=%s" % user_username)
-		else:
-			self.redirect('/login')
 
 
 class AnswerHandler(session_module.BaseSessionHandler):
@@ -369,68 +363,7 @@ class AnswerHandler(session_module.BaseSessionHandler):
 				self.write_form()
 				self.response.out.write (self.request.get('opt'))
 
-class InsertHandler(session_module.BaseSessionHandler):
 
-	def write_form (self, question="", firstopt="", secondopt="",thirdopt="", question_error="", firstopt_error="",	secondopt_error="", thirdopt_error=""):
-		self.response.out.write(insertquestion_form % {"question" :
-		question,"firstopt" : firstopt,
-		"secondopt" : secondopt,"thirdopt" : thirdopt,
-		"question_error" : question_error,
-		"firstopt_error" : firstopt_error,
-		"secondopt_error" : secondopt_error,
-		"thirdopt_error" : thirdopt_error})
-
-	def get(self):
-		self.write_form()
-
-	def post(self):
-		def escape_html(s):
-			return cgi.escape(s, quote=True)
-		QUESTION_RE = re.compile(r"^[a-zA-Z0-9_-]+( [a-zA-Z0-9_?]+)*$")
-		def valid_question(question):
-			return QUESTION_RE.match(question)
-		u_question = self.request.get('question')
-		u_firstopt = self.request.get('firstopt')
-		u_secondopt = self.request.get('secondopt')
-		u_thirdopt = self.request.get('thirdopt')
-		sani_question = escape_html(u_question)
-		sani_firstopt = escape_html(u_firstopt)
-		sani_secondopt = escape_html(u_secondopt)
-		sani_thirdopt = escape_html(u_thirdopt)
-		question_error = ""
-		firstopt_error = ""
-		secondopt_error = "" 
-		thirdopt_error = ""
-		question=""
-		error = False
-		if not valid_question(u_question):
-			question_error = "Wrong type question!"
-			error = True
-		if not valid_question(u_firstopt):
-			firstopt_error = "Wrong type of answer in first option!"
-			error = True
-		if not valid_question(u_secondopt):
-			secondopt_error = "Wrong type of answer in second option!"
-			error = True
-		if not valid_question(u_thirdopt):
-			thirdopt_error = "Wrong type of answer in third option!"
-			error = True
-		if error:
-			self.write_form(sani_question, sani_firstopt, sani_secondopt, thirdopt_error,question_error, firstopt_error, secondopt_error, thirdopt_error)
-		else:
-			question= Question.query(Question.question==u_question).count()
-			if question==0:
-				q=Question()
-				q.question=u_question
-				q.first=u_firstopt
-				q.second=u_secondopt
-				q.third=u_thirdopt
-				q.put()
-				self.write_form()
-				self.response.out.write ("<h3>Question: %s  added, add as many as you want</h3>" %u_question)
-			else:
-				self.write_form(sani_question, sani_firstopt, sani_secondopt, thirdopt_error,question_error, firstopt_error, secondopt_error, thirdopt_error)
-				self.response.out.write ("<h3>Question: %s <p> was already inserted</h3>" %u_question)
 
 class ComprobarEmail(webapp2.RequestHandler):
 	def post(self):
@@ -439,83 +372,6 @@ class ComprobarEmail(webapp2.RequestHandler):
 			self.response.out.write("<span style='color:green'>Email -> " +self.request.get('email')+ " <- Correcto</span>")
 		else:
 			self.response.out.write("<span style='color:red'>Este email ya esta registrado o no es valido</span>")
-
-class Visitante(ndb.Model):
-	nombre=ndb.StringProperty()
-	email=ndb.StringProperty()
-	password=ndb.StringProperty(indexed=True)
-	creado=ndb.DateTimeProperty(auto_now_add=True)
-
-class Question(ndb.Model):
-	question=ndb.StringProperty()
-	first=ndb.StringProperty()
-	second=ndb.StringProperty()
-	third=ndb.StringProperty()
-	creado=ndb.DateTimeProperty(auto_now_add=True)
-
-
-class SignupHandler(session_module.BaseSessionHandler):
-	def write_form (self, username="", password="", verify="", email="", username_error="", password_error="", verify_error="", email_error=""):
-		#self.response.out.write(login_form % {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error})
-		tem_values = {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error}
-		template = JINJA_ENVIRONMENT.get_template('signup.html')
-		self.response.write(template.render(tem_values))
-	def get(self):
-		self.write_form()
-	def post(self):
-		def escape_html(s):
-			return cgi.escape(s, quote=True)
-		USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-		PASSWORD_RE = re.compile(r"^.{3,20}$")
-		EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
-		def valid_username(username):
-			return USER_RE.match(username)
-		def valid_password(password):
-			return PASSWORD_RE.match(password)
-		def valid_email(email):
-			return EMAIL_RE.match(email)
-		user_username = self.request.get('username')
-		user_password = self.request.get('password')
-		user_verify = self.request.get('verify')
-		user_email = self.request.get('email')
-		sani_username = escape_html(user_username)
-		sani_password = escape_html(user_password)
-		sani_verify = escape_html(user_verify)
-		sani_email = escape_html(user_email)
-		username_error = ""
-		password_error = ""
-		verify_error = "" 
-		email_error = ""
-		user=""
-		error = False
-		if not valid_username(user_username):
-			username_error = "Nombre incorrecto!"
-			error = True
-		if not valid_password(user_password):
-			password_error = "Password incorrecto!"
-			error = True
-		if not user_verify or not user_password == user_verify:
-			verify_error = "Password no coincide!"
-			error = True
-			self.redirect("/prueba")
-		if not valid_email(user_email):
-			email_error = "Formato de Email incorrecto!"
-			error = True
-		if error:
-			self.write_form(sani_username, sani_password, sani_verify, sani_email,username_error, password_error, verify_error, email_error)
-		else:
-			user= Visitante.query(Visitante.nombre==user_username, Visitante.email==user_email).count()
-			if user==0:
-				u=Visitante()
-				u.nombre=user_username
-				u.email=user_email
-				u.password=user_password
-				u.put()
-				self.redirect("/manage?username=%s" % user_username)
-			else:
-				self.redirect("/manage")
-				self.write_form(sani_username, sani_password, sani_verify, sani_email,username_error, password_error, verify_error, email_error)
-				self.response.out.write ("Kaixo: %s <p> Ya estabas fichado" %user_username)
 
 
 class WelcomeHandler(session_module.BaseSessionHandler):
@@ -559,13 +415,25 @@ class MainHandler(session_module.BaseSessionHandler):
 	def get(self):
 		self.write_form()
 
-class ManageHandler(session_module.BaseSessionHandler):
-	def write_form (self):
-		self.response.out.write(manage_form)
-	def get(self):
-		greeting = ('Hi, %s! <p>' %(self.request.get('username')))
-		self.response.out.write('<h3>%s</h3>' %greeting)
-		self.write_form()
+class CheckAnswerHandler(session_module.BaseSessionHandler):
+	def post(self):
+		givenAnswer=self.request.get('ans')
+		question=self.request.get('question')
+		questionQuery= Question.query(Question.question==question)
+		if questionQuery.count()==1:
+			question=questionQuery.get()
+			if question.correct==givenAnswer:
+				self.response.out.write ("<h2>Correct!!!</h2>   <button onClick='checkAnswer()''>Next Question</button>" )
+			else: 
+				self.response.out.write ("Sorry, try again...")
+		else:
+			self.response.out.write ("no question")
+
+from manage import *
+from login import *
+from signup import *
+from insert import *
+
 class BootHandler(session_module.BaseSessionHandler):
 	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
 			tem_values = {"question" : question,"firstopt" : firstopt, "secondopt" : secondopt,"thirdopt" : thirdopt,"firstopt_error" : firstopt_error,	"secondopt_error" : secondopt_error,"thirdopt_error" : thirdopt_error}
@@ -579,13 +447,14 @@ app = webapp2.WSGIApplication([
     ('/bootstrap', BootHandler),
     ('/manage', ManageHandler),
     ('/main', PrincipalHandler),
-    ('/prueba', borrar),
+    ('/prueba', PlayHandler),
     ('/signup', SignupHandler),
     ('/login', LoginHandler),
     ('/cerrarsesion', CerrarSesionHandler),
     ('/welcome',WelcomeHandler),
     ('/insert', InsertHandler),
     ('/answer', AnswerHandler),
+    ('/checkanswer', CheckAnswerHandler),
     ('/result',ResultHandler),
     ('/fillanswer', FillAnswerHandler),
     ('/comprobar',ComprobarEmail)
