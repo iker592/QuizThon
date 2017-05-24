@@ -309,13 +309,18 @@ class FillThemeHandler(webapp2.RequestHandler):
 		#self.response.out.write("<span style='color:red'>Este es valido</span>")
 	#	questionQuery=Question.query(Question.question=="Which is the first president of the USA?")#self.request.get('question')
 		question=""
-		questionQuery= Question.query(Question.theme=="Geography") #self.request.get('theme')
+		questionQueryThemes = ndb.gql("SELECT DISTINCT question FROM Question WHERE theme = :1", self.request.get('theme'))
+
+		questionQuery= Question.query(Question.theme==self.request.get('theme')) 
+		#TODO: extraer exactamente la pregunta numero X que queremos, HAY Q LLEVAR LA CUENTA DE DONDE ESTAMOS DE ALGUNA FORMA
 		if questionQuery.count()>0:
 			tope =questionQuery.count()
 			count=0
-			while (count < tope):
+			while (count < tope ):#or question != self.request.get('question')):
 				question=questionQuery.get()
 				count = count + 1
+#			if(question == self.request.get('question') or (self.request.get('question')=="" and questionQueryThemes.count>0))
+#				question=questionQueryThemes.get()
 			firstopt_error = ""
 			secondopt_error = "" 
 			thirdopt_error = ""
@@ -328,8 +333,8 @@ class FillThemeHandler(webapp2.RequestHandler):
 			self.response.out.write ("damn no questions bruh")
 
 class PlayHandler(session_module.BaseSessionHandler):
-	def write_form (self, mylist,result):
-		tem_values = {"mylist" : mylist, "result":result}
+	def write_form (self, mylist,mylistThemes,result):
+		tem_values = {"mylist" : mylist,"mylistThemes" : mylistThemes, "result":result}
 		template = JINJA_ENVIRONMENT.get_template('listanswer.html')
 		self.response.write(template.render(tem_values))
 	def get(self):
@@ -339,8 +344,9 @@ class PlayHandler(session_module.BaseSessionHandler):
 			result=self.request.get('result')
 
 			questionQuery= Question.query()
+			questionQueryThemes = ndb.gql("SELECT DISTINCT theme FROM Question ") #+ "WHERE theme = :1", self.request.get('theme'))
 #			self.response.out.write('<h2>%s</h2>' %greeting)  	
-			self.write_form(questionQuery,result)
+			self.write_form(questionQuery,questionQueryThemes,result)
 
 #		else:
 #			self.redirect(users.create_login_url(self.request.uri))

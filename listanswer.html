@@ -24,7 +24,7 @@
 		{$("#erroremail").html('Processing...');
 		$.ajax("/filltheme",
 			{"type": "post",
-			"data":{"theme":$('#themes').find(":selected").text()},
+			"data":{"theme":$('#themes').find(":selected").text(), "question":$('#theQ').text()},
 			"success": function(result) {
 			$("#erroremail").html(result);
 
@@ -68,8 +68,8 @@
 		</div>
 	</div>
 	<div="greeting" position="absolute;" right="0px;" top="0px;"></div>
-	<h2>Select question please:</h2>
-		      <select id="questions" name="questions" onchange="fillQuestion(this.value)"> 
+	<h3>Select a theme please:</h3>
+		<!--      <select id="questions" name="questions" onchange="fillQuestion(this.value)"> 
 		      {% for item in mylist %}
 		        {% if item %}
 		          <option value="{{item.question}}">{{item.question}}</option>
@@ -77,9 +77,10 @@
 		           <option value="<your_blank>"></option>
 		        {% endif %}
 		      {% endfor %}
-		      </select>
-		      <select id="themes" name="themes" onchange="fillThemes(this.value)"> 
-		      {% for item in mylist %}
+		      </select> -->
+		      <select id="themes" name="themes" onchange="fillThemes(this.value)">
+		      <option>Themes</option> 
+		      {% for item in mylistThemes %}
 		        {% if item %}
 		          <option value="{{item.theme}}">{{item.theme}}</option>
 		        {% else %}
