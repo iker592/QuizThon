@@ -31,6 +31,7 @@ class LoginHandler(session_module.BaseSessionHandler):
 		user_password = self.request.get('password')
 		user= Visitante.query(Visitante.nombre==user_username, Visitante.password==user_password).count()
 		if user==1:
+			self.session['username'] = user_username
 			self.redirect("/manage?username=%s" % user_username)
 		else:
 			self.redirect('/login')

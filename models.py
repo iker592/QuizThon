@@ -30,3 +30,6 @@ class Question(ndb.Model):
 	theme=ndb.StringProperty()
 	correct=ndb.StringProperty()
 	creado=ndb.DateTimeProperty(auto_now_add=True)
+
+
+

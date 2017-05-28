@@ -17,10 +17,11 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 class ManageHandler(session_module.BaseSessionHandler):
-	def write_form (self):
+	def write_form (self,username):
+		tem_values = {"username" : username}
 		template = JINJA_ENVIRONMENT.get_template('manage.html')
-		self.response.write(template.render())
+		self.response.write(template.render(tem_values))
 	def get(self):
 		greeting = ('Hi, %s! <p>' %(self.request.get('username')))
-		self.write_form()
-		self.response.out.write('<h3>%s</h3>' %greeting)
+		self.write_form(self.request.get('username'))
+		#self.response.out.write('<h3>%s</h3>' %greeting)

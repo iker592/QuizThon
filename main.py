@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import division
+
 import webapp2
 import re
 import cgi
@@ -31,247 +33,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
-main_form=''' 
-<!DOCTYPE html>
-<html>
-<head> 
-	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-</head> 
-<body>
-	<button type="button" onclick="window.location.href='/login'">Login</button></br> 
-	<button type="button" onclick="window.location.href='/signup'">Sign Up</button> </br> 
-	<button type="button" onclick="window.location.href='/prueba'">Take a Quiz!</button> </br> 
-</body>
-</html>
-'''
 
-manage_form=''' 
-<!DOCTYPE html>
-<html>
-<head> 
-	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-</head> 
-
-<body>
-	<button type="button" onclick="window.location.href='/cerrarsesion'">Logout</button> </br> 
-	<button type="button" onclick="window.location.href='/insert'">Add a question</button> </br> 
-	<button type="button" onclick="window.location.href='/prueba'">Take a Quiz!</button> </br> 
-</body>
-</html>
-'''
-
-signup_form='''<html> <head> <link type="text/css" rel="stylesheet"
-href="/stylesheets/main.css" /> <title>Introduzca sus datos:</title> <style
-type="text/css"> .label {text-align: right} .error {color: red} </style>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
-<script>
-
-function validarEmail(email)
-{$("#erroremail").html('Procesando...');
-$.ajax("/comprobar",
-	{"type": "post",
-	"data":{"email":email},
-	"success": function(result) {
-	$("#erroremail").html(result);},
-	"error": function(result)
-			{ console.error("Se ha producido un error:", result);}, "async": true })}
-</script>
-
-</head> 
-<body> 
-<h1>Sign up</h1> <h2>Please fill up the blanks:</h2> <form method="post"> <table> <tr> <td
-class="label"> Username </td> <td> <input
-type="text" name="username" value="%(username)s" placeholder="Tu nombre
-..."> </td> <td class="error"> %(username_error)s
-</td> </tr> <tr> <td class="label"> Password
-</td> <td> <input type="password" name="password"
-value="%(password)s" autocomplete="off"> </td> <td
-class="error"> %(password_error)s </td> </td>
-</tr> <tr> <td class="label"> Repeat Password </td>
-<td> <input type="password" name="verify" value="%(verify)s"
-placeholder="El mismo de antes"> </td> <td class="error">
-%(verify_error)s </td> </tr> 
-<tr> <td class="label">Email </td> <td> <input type="text" name="email" id="email" onBlur="validarEmail(this.value)" value="%(email)s"><div id="erroremail"></div> 
-</td> <td class="error">
-%(email_error)s </td> </tr> 
-</table> 
-<input type="submit"> 
-</form> 
-</body> 
-</html>'''
-
-login_form='''
-<html> 
-	<head> 
-	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
-	<title>Introduzca sus datos:</title> 
-	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<script>
-		function validarEmail(email)
-		{$("#erroremail").html('Procesando...');
-		$.ajax("/comprobar",
-			{"type": "post",
-			"data":{"email":email},
-			"success": function(result) {
-			$("#erroremail").html(result);},
-			"error": function(result)
-					{ console.error("Se ha producido un error:", result);}, "async": true })}
-	</script>
-	</head> 
-	<body> 
-	<h1>Login</h1>
-	<h2>Please fill up the blanks:</h2> 
-		<form method="post"> 
-			<table> 
-				<tr> 
-					<td class="label"> Username </td> 
-					<td> <input type="text" name="username" value="%(username)s" placeholder="Tu nombre..."> </td> 
-					<td class="error"> %(username_error)s </td> 
-				</tr> 
-				<tr> <td class="label"> Password </td> 
-					<td> <input type="password" name="password" value="%(password)s" autocomplete="off"> </td> 
-					<td class="error"> %(password_error)s </td> </td>
-				</tr>  
-
-			</table> 
-			<input type="submit"> 
-		</form>
-	</body> 
-</html>'''
-
-insertquestion_form='''
-<html> 
-<head> 
-	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
-	<title>Introduce una pregunta:</title> 
-	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-		<script>
-		function validarEmail(email)
-		{$("#erroremail").html('Procesando...');
-		$.ajax("/comprobar",
-			{"type": "post",
-			"data":{"email":email},
-			"success": function(result) {
-			$("#erroremail").html(result);},
-			"error": function(result)
-					{ console.error("Se ha producido un error:", result);}, "async": true })}
-	</script>
-</head> 
-<body> 
-	<h1>Adding a new Question</h1> 
-	<h2>Fill and submit the form please:</h2> 
-	<form method="post"> 
-		<table> 
-			<tr> <td class="label">Question</td> 
-				<td> <input type="text" name="question" value="%(question)s" placeholder="Your question ..."> </td> 
-				<td class="error"> %(question_error)s </td> 
-			</tr> 
-			<tr> <td class="label"> First Option </td> 
-				<td> <input type="text" name="firstopt" value="%(firstopt)s"> </td> 
-				<td class="error"> %(firstopt_error)s </td>
-			</tr> 
-			<tr> <td class="label"> Second Option </td>
-				<td> <input type="text" name="secondopt" value="%(secondopt)s"> </td> 
-				<td class="error"> %(secondopt_error)s </td> 
-			</tr>
-			<tr> <td class="label"> Third Option </td>
-				<td> <input type="text" name="thirdopt" value="%(thirdopt)s"> </td> 
-				<td class="error"> %(thirdopt_error)s </td> 
-			</tr>
-			<tr> <td class="label"> Theme </td>
-				<td> <input type="text" name="theme" value="%(theme)s"> </td> 
-				<td class="error"> %(theme_error)s </td> 
-			</tr> 
-			<tr> <td class="label"> Correct Option </td>
-				<td> <input type="text" name="correct" value="%(correct)s"> </td> 
-				<td class="error"> %(correct_error)s </td> 
-			</tr>
-		</table> 
-		<input type="submit"> 
-	</form> 
-</body> 
-</html>'''
-
-answerquestion_form='''
-<html> 
-<head> 
-	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
-	<title>Answer the question:</title> 
-	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-		<script>
-		function validarEmail(email)
-		{$("#erroremail").html('Procesando...');
-		$.ajax("/comprobar",
-			{"type": "post",
-			"data":{"email":email},
-			"success": function(result) {
-			$("#erroremail").html(result);},
-			"error": function(result)
-					{ console.error("Se ha producido un error:", result);}, "async": true })}
-	</script>
-</head> 
-<body> 
-	<h1>Answering a Question</h1> 
-	<h2>Answer the question please:</h2> 
-	<form method="post"> 
-		<table> 
-			<tr> <td class="label">%(question)s</td> 
-			</tr> 
-			<tr> <td class="label"> 1) </td> 
-				<td> <input type="radio" name="opt" value="%(firstopt)s" checked>%(firstopt)s <br> </td> 
-				<td class="error"> %(firstopt_error)s </td>
-			</tr> 
-			<tr> <td class="label"> 2) </td>
-				<td> <input type="radio" name="opt" value="%(secondopt)s"> %(secondopt)s<br></td> 
-				<td class="error"> %(secondopt_error)s </td> 
-			</tr>
-			<tr> <td class="label"> 3) </td>
-				<td> <input type="radio" name="opt" value="%(thirdopt)s"> %(thirdopt)s</td> 
-				<td class="error"> %(thirdopt_error)s </td> 
-			</tr> 
-		</table> 
-		<input type="submit"> 
-	</form> 
-</body> 
-</html>'''
-
-
-listquestion_form='''
-<html> 
-<head> 
-	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
-	<title>Answer the question:</title> 
-	<style type="text/css"> .label {text-align: right} .error {color: red} </style>
-</head> 
-<body> 
-	<h1>Answering a Question</h1> 
-	<h2>Answer the question please:</h2> 
-	<form method="post"> 
-		{% for greeting in greetings %}
-
-		<input type="submit"> 
-	</form> 
-</body> 
-</html>'''
-
-
-class ResultHandler(session_module.BaseSessionHandler):
-	def get(self):
-		questionQuery= Question.query(Question.question==self.request.get('questions'))
-		if questionQuery.count()==1:
-			question=questionQuery.get()
-			if question.first==self.request.get('opt')	or question.second==self.request.get('opt') or question.third==self.request.get('opt'):
-				#self.write_form()
-				self.response.out.write ("yay!")
-				self.redirect("/prueba?result=Correct answer!!! Select another one or leave whenever you want.")
-			else:
-				#self.write_form()
-				self.response.out.write ("duuude...")
-				self.redirect("/prueba?result=Wrong answer :( Try again or leave whenever you want!")
 
 class FillAnswerHandler(webapp2.RequestHandler):
 	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
@@ -297,8 +59,8 @@ class FillAnswerHandler(webapp2.RequestHandler):
 			self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt, firstopt_error, secondopt_error, thirdopt_error)
 		else:
 			self.response.out.write ("damn no questions bruh")
-
-class FillThemeHandler(webapp2.RequestHandler):
+import logging
+class FillThemeHandler(session_module.BaseSessionHandler):
 	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
 			tem_values = {"question" : question,"firstopt" : firstopt, "secondopt" : secondopt,"thirdopt" : thirdopt,"firstopt_error" : firstopt_error,	"secondopt_error" : secondopt_error,"thirdopt_error" : thirdopt_error}
 			template = JINJA_ENVIRONMENT.get_template('fillanswer.html')
@@ -307,46 +69,154 @@ class FillThemeHandler(webapp2.RequestHandler):
 		def escape_html(s):
 			return cgi.escape(s, quote=True)
 		#self.response.out.write("<span style='color:red'>Este es valido</span>")
-	#	questionQuery=Question.query(Question.question=="Which is the first president of the USA?")#self.request.get('question')
-		question=""
-		questionQueryThemes = ndb.gql("SELECT DISTINCT question FROM Question WHERE theme = :1", self.request.get('theme'))
-
+		#questionQueryThemes = ndb.gql("SELECT question FROM Question WHERE theme = :1", self.request.get('theme'))
+		logging.info("hello")
 		questionQuery= Question.query(Question.theme==self.request.get('theme')) 
-		#TODO: extraer exactamente la pregunta numero X que queremos, HAY Q LLEVAR LA CUENTA DE DONDE ESTAMOS DE ALGUNA FORMA
-		if questionQuery.count()>0:
-			tope =questionQuery.count()
+		lastQuestion=self.session.get('currentQuestion')
+		firstTime=False
+		if not lastQuestion:
+			lastQuestion=""
+		if not lastQuestion or lastQuestion=="":
+			firstTime=True
+		logging.info("lastQuestion: %s"  %lastQuestion)
+		#question=""
+		question_s=""
+		foundLast=False
+		end=False
+		themeFinished=False
+		clock=0
+		n = questionQuery.count()
+
+		if n==1 and  lastQuestion!="":
+			end =True
+		if n>0:
 			count=0
-			while (count < tope ):#or question != self.request.get('question')):
-				question=questionQuery.get()
-				count = count + 1
-#			if(question == self.request.get('question') or (self.request.get('question')=="" and questionQueryThemes.count>0))
-#				question=questionQueryThemes.get()
-			firstopt_error = ""
-			secondopt_error = "" 
-			thirdopt_error = ""
-			sani_question = escape_html(question.question)
-			sani_firstopt = escape_html(question.first)
-			sani_secondopt = escape_html(question.second)
-			sani_thirdopt = escape_html(question.third)
-			self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt, firstopt_error, secondopt_error, thirdopt_error)
+			for  q in questionQuery:
+				logging.info("count: %s" %count)
+				count=count+1
+
+				if firstTime:
+					question_s=q.question
+					break
+
+				if foundLast:															
+					logging.info("415")
+					logging.info("dentro del if foundLast TRUE %s" %question_s)
+					question_s=q.question
+					#last=False
+					break
+				if(q.question==lastQuestion):										
+					logging.info("421")
+					foundLast=True
+					logging.info("q.question==lastQuestion %s" %q.question)
+					question_s=q.question
+					if count==n and n!=1:
+						end=True
+			if not foundLast:
+				aux=questionQuery.get()
+				question_s=aux.question
+			if end:
+				self.session['currentQuestion']=""
+
+			questionQuery2= Question.query(Question.question==question_s) 
+			if questionQuery2.count()==1 and not end :								
+				logging.info("432")
+				question=questionQuery2.get()
+				firstopt_error = ""
+				secondopt_error = "" 
+				thirdopt_error = ""
+				sani_question = escape_html(question.question)
+				sani_firstopt = escape_html(question.first)
+				sani_secondopt = escape_html(question.second)
+				sani_thirdopt = escape_html(question.third)
+				self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt, firstopt_error, secondopt_error, thirdopt_error)
+			else:
+				logging.info("End, question_s: %s"  %question_s)
+				if self.session.get('username'):
+					email=self.session.get('username')
+				else:
+					email=self.session.get('nickname')
+			#	fList=FinishedThemes.query(FinishedThemes.theme==self.request.get('theme'), FinishedThemes.email==email)
+			#	if fList.count()>0:
+			#		f=fList.get()
+			#	else: 
+				f=FinishedThemes()
+				f.theme=self.request.get('theme')
+				f.email=email
+				f.corrects=self.session.get('correctAnswer')
+				f.incorrects=self.session.get('incorrectAnswer')
+				f.put()
+
+
+				listaPreguntasTheme= Question.query(Question.theme==self.request.get('theme'))
+				finQlist= FinishedThemes.query(FinishedThemes.email==email,FinishedThemes.theme==self.request.get('theme'))
+				count=0
+				for finQ in finQlist:
+					count=count+finQ.corrects
+				count=count+self.session.get('correctAnswer')
+				totalAnswered=finQlist.count() * listaPreguntasTheme.count() +finQlist.count()
+				if totalAnswered>0:
+					percentage=count/totalAnswered
+				else:
+					percentage=count/(self.session.get('correctAnswer')+self.session.get('incorrectAnswer'))
+					logging.info("porcentaje 0")
+				percentTwoDecimals = float("{0:.2f}".format(percentage))
+
+
+
+				finQGlobalList= FinishedThemes.query(FinishedThemes.email==email)
+				PreguntasRespondidasList= VisiQuest.query(VisiQuest.email==email)
+				countGlobal=0
+				countIncorGlobal=0
+				for ft in finQGlobalList:
+					countGlobal=countGlobal+ft.corrects
+					countIncorGlobal=countIncorGlobal+ft.incorrects
+				#countGlobal=countGlobal+self.session.get('correctAnswer')
+				#countIncorGlobal=countIncorGlobal+self.session.get('incorrectAnswer')
+				logging.info("countGlobal %s" %countGlobal)
+				totalAnsweredGlobal=countGlobal+countIncorGlobal
+				if totalAnsweredGlobal>0:
+					percentageGlobal=countGlobal/totalAnsweredGlobal 
+				else:
+					percentageGlobal=self.session.get('correctAnswer')/(self.session.get('correctAnswer')+self.session.get('incorrectAnswer'))
+					logging.info("porcentaje global 0")
+				logging.info("totalAnsweredGlobal %s" %totalAnsweredGlobal)
+				percentTwoDecimalsGlobal = float("{0:.2f}".format(percentageGlobal))
+
+
+				self.response.out.write("<h3>You answered all the questions within this theme!</h3><h2> Score: "+ str(self.session.get('correctAnswer'))+"/"+str(listaPreguntasTheme.count()) +"</h2> <h2>Right Guess Percentage: "+str(percentTwoDecimals)+"</h2><h2>Right Global Guess Percentage: "+str(percentTwoDecimalsGlobal)+"</h2><h3>Try with another another one!</h3>" )
+				self.session['correctAnswer']=0
+				self.session['incorrectAnswer']=0
 		else:
 			self.response.out.write ("damn no questions bruh")
 
 class PlayHandler(session_module.BaseSessionHandler):
-	def write_form (self, mylist,mylistThemes,result):
-		tem_values = {"mylist" : mylist,"mylistThemes" : mylistThemes, "result":result}
+	def write_form (self, mylist,mylistThemes,result,nick,logoutlink,guest):
+		tem_values = {"mylist" : mylist,"mylistThemes" : mylistThemes, "result":result,"nick":nick,"logoutlink":logoutlink,"guest":guest}
 		template = JINJA_ENVIRONMENT.get_template('listanswer.html')
 		self.response.write(template.render(tem_values))
 	def get(self):
-#		user = users.get_current_user()
+			logged_username=self.session.get('username')
 #		if user:
 #			greeting = ('Logged as: %s <a href="%s">Finish session </a><br>' %(user.nickname(), users.create_logout_url('/')))
 			result=self.request.get('result')
-
+			nick=self.request.get('nick')
+			if (nick!=""):
+			#	user = users.User(nick)
+				user_name=nick
+				guest="Nickname:"
+				self.session['nickname'] = user_name
+			#	logoutlink=users.create_logout_url('/bootstrap')
+			elif (logged_username!=""):
+				user_name=logged_username
+				guest="Username:"
+			#	logoutlink="/logout"
+			else:
+				self.response.redirect('/')
 			questionQuery= Question.query()
 			questionQueryThemes = ndb.gql("SELECT DISTINCT theme FROM Question ") #+ "WHERE theme = :1", self.request.get('theme'))
 #			self.response.out.write('<h2>%s</h2>' %greeting)  	
-			self.write_form(questionQuery,questionQueryThemes,result)
+			self.write_form(questionQuery,questionQueryThemes,result,user_name,"/logout",guest)
 
 #		else:
 #			self.redirect(users.create_login_url(self.request.uri))
@@ -354,47 +224,6 @@ class PlayHandler(session_module.BaseSessionHandler):
 		#question=self.request.get('questions')
 
 		#self.redirect("/answer?question=%s" %question)
-
-
-
-class AnswerHandler(session_module.BaseSessionHandler):
-
-	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
-		
-		tem_values = {"question" : question,"firstopt" : firstopt, "secondopt" : secondopt,"thirdopt" : thirdopt,"firstopt_error" : firstopt_error,	"secondopt_error" : secondopt_error,"thirdopt_error" : thirdopt_error}
-
-		template = JINJA_ENVIRONMENT.get_template('answer.html')
-		self.response.write(template.render(tem_values))
-
-	def get(self):
-		def escape_html(s):
-			return cgi.escape(s, quote=True)
-		question=""
-		questionQuery= Question.query(Question.question=="Which is the first president of the USA?")#self.request.get('question'))
-		if questionQuery.count()==1:
-			question=questionQuery.get()
-			firstopt_error = ""
-			secondopt_error = "" 
-			thirdopt_error = ""
-			sani_question = escape_html(question.question)
-			sani_firstopt = escape_html(question.first)
-			sani_secondopt = escape_html(question.second)
-			sani_thirdopt = escape_html(question.third)
-			self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt, firstopt_error, secondopt_error, thirdopt_error)
-		else:
-			self.write_form()
-			self.response.out.write ("No fak were given")
-
-	def post(self):
-		questionQuery= Question.query(Question.question=="Which is the first president of the USA?")
-		if questionQuery.count()==1:
-			question=questionQuery.get()
-			if question.first==self.request.get('opt')	or question.second==self.request.get('opt') or question.third==self.request.get('opt'):
-				self.write_form()
-				self.response.out.write ("yay!")
-			else:
-				self.write_form()
-				self.response.out.write (self.request.get('opt'))
 
 
 
@@ -407,67 +236,84 @@ class ComprobarEmail(webapp2.RequestHandler):
 			self.response.out.write("<span style='color:red'>Este email ya esta registrado o no es valido</span>")
 
 
-class WelcomeHandler(session_module.BaseSessionHandler):
-	def get(self):
-		greeting = ('Saludos, %s <p><a href="%s">Sign out </a><br>' %(self.request.get('username'), users.create_logout_url('/')))
-		self.response.out.write('<html><body><h1>%s</h1></body></html>' %greeting) 
-
-class PrincipalHandler(session_module.BaseSessionHandler):
-	def get(self):
-		user = users.get_current_user()
-		if user:
-			greeting = ('Hi, %s <p><a href="%s">Finish session </a><br>' %(user.nickname(), users.create_logout_url('/')))
-			self.response.out.write(answerquestion_form)
-			self.response.out.write('<h1>%s</h1>' %greeting) 
-		else:
-			self.redirect(users.create_login_url(self.request.uri))
-class PruebaHandler(session_module.BaseSessionHandler):
-	def get(self):
-		if self.session.get('counter'):
-			self.response.out.write('<b>La sesion existe</b><p>')
-			counter = self.session.get('counter')
-			self.session['counter'] = counter + 1
-			self.response.out.write('<h2>Numero de accesos = ' +
-			 str(self.session.get('counter'))+'</h2>')
-		else:
-			self.response.out.write('<b>No habia sesion Sesion Creada</b><p>')
-			self.session['counter'] = 1
-			self.response.out.write('<h2>Numero de accesos = ' +
-			str(self.session.get('counter'))+'</h2>')
-class CerrarSesionHandler(session_module.BaseSessionHandler):
+class LogoutSesionHandler(session_module.BaseSessionHandler):
 	def get(self):
 		for k in self.session.keys():
 			del self.session[k]
-			self.response.out.write ("Borrada la sesion ...")
+			self.response.out.write ("Session ended ...")
+		self.redirect('/')
 		self.response.out.write ("<h2>Goodbye!</h2>")
 		self.response.out.write("<p><h2><a href='/'> Go back Home ...</a></h2>")
-
-class MainHandler(session_module.BaseSessionHandler):
-	def write_form (self):
-		self.response.out.write(main_form)
-	def get(self):
-		self.write_form()
 
 class CheckAnswerHandler(session_module.BaseSessionHandler):
 	def post(self):
 		givenAnswer=self.request.get('ans')
 		question=self.request.get('question')
 		questionQuery= Question.query(Question.question==question)
+		visiqList= VisiQuest.query(VisiQuest.question==question)
 		if questionQuery.count()==1:
 			question=questionQuery.get()
-			if question.correct==givenAnswer:
-				self.response.out.write ("<h2>Correct!!!</h2>   <button onClick='fillThemes()''>Next Question</button>" )
-			else: 
-				self.response.out.write ("Sorry, try again...")
+			#user=users.get_current_user()
+			if self.session.get('correctAnswer'):
+				aux=self.session['correctAnswer']
+			else:
+				self.session['correctAnswer']=0
+				aux=self.session.get('correctAnswer')
+
+			if self.session.get('incorrectAnswer'):
+				incor=self.session['incorrectAnswer']
+			else:
+				self.session['incorrectAnswer']=0
+				incor=self.session.get('incorrectAnswer')
+
+			if self.session.get('username'):
+				if visiqList.count()>0:
+					vq=visiqList.get()
+				else: 
+					vq=VisiQuest()
+				vq.question=question.question
+				vq.email=self.session.get('username')
+				if question.correct==givenAnswer:
+					vq.correct=True
+					self.session['correctAnswer']=aux+1
+					self.response.out.write ("<h2>Correct!!!</h2>  <h3>Correct Answers:"+str(self.session.get('correctAnswer'))+"</h3> <button onClick='fillThemes()''>Next Question</button> <div id='theQ'  style='display: none;'>"+self.request.get('question')+"</div>" )
+				else:
+					vq.correct=False
+					self.session['incorrectAnswer']=incor+1
+					self.response.out.write ("<h2>Incorrect...</h2> <h3>Correct Answers: %s</h3><button onClick='fillThemes()''>Next Question</button>" %self.session.get('correctAnswer'))
+				vq.put()
+			elif self.session.get('nickname'):
+				if question.correct==givenAnswer:
+					self.session['correctAnswer']=aux+1
+					self.response.out.write ("<h2>Correct!!!</h2> <h3>Correct Answers: %s</h3><button onClick='fillThemes()''>Next Question</button>" %self.session.get('correctAnswer'))
+				else: 
+					self.session['incorrectAnswer']=incor+1
+					self.response.out.write ("<h2>Incorrect...</h2> <h3>Correct Answers: %s</h3><button onClick='fillThemes()''>Next Question</button>" %self.session.get('correctAnswer'))
+			else:
+				self.response.out.write ("no username nor nickname")
+			self.session['currentQuestion']=question.question
 		else:
-			self.response.out.write ("no question")
+			self.response.out.write ("no such question")
 
 from manage import *
 from login import *
 from signup import *
 from insert import *
 
-class BootHandler(session_module.BaseSessionHandler):
+class VisiQuest(ndb.Model):
+	email=ndb.StringProperty()
+	question=ndb.StringProperty()
+	correct=ndb.BooleanProperty()
+	creado=ndb.DateTimeProperty(auto_now_add=True)
+
+class FinishedThemes(ndb.Model):
+	email=ndb.StringProperty()
+	theme=ndb.StringProperty()
+	corrects=ndb.IntegerProperty()
+	incorrects=ndb.IntegerProperty()
+	creado=ndb.DateTimeProperty(auto_now_add=True)
+
+class RootHandler(session_module.BaseSessionHandler):
 	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
 			tem_values = {"question" : question,"firstopt" : firstopt, "secondopt" : secondopt,"thirdopt" : thirdopt,"firstopt_error" : firstopt_error,	"secondopt_error" : secondopt_error,"thirdopt_error" : thirdopt_error}
 			template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -476,20 +322,17 @@ class BootHandler(session_module.BaseSessionHandler):
 		self.write_form()
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler),
-    ('/bootstrap', BootHandler),
-    ('/manage', ManageHandler),
-    ('/main', PrincipalHandler),
-    ('/prueba', PlayHandler),
+    ('/', RootHandler),
     ('/signup', SignupHandler),
     ('/login', LoginHandler),
-    ('/cerrarsesion', CerrarSesionHandler),
-    ('/welcome',WelcomeHandler),
+    ('/play', PlayHandler),
+    ('/logout', LogoutSesionHandler),
+
     ('/insert', InsertHandler),
-    ('/answer', AnswerHandler),
+    ('/manage', ManageHandler),
     ('/checkanswer', CheckAnswerHandler),
-    ('/result',ResultHandler),
     ('/fillanswer', FillAnswerHandler),
     ('/filltheme', FillThemeHandler),
+
     ('/comprobar',ComprobarEmail)
 ], config=session_module.myconfig_dict, debug=True)

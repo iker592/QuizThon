@@ -24,18 +24,16 @@
 					 
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
 						 <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
-					</button> <a class="navbar-brand" href="/bootstrap">QuizGame</a>
+					</button> <a class="navbar-brand" href="/">QuizGame</a>
 				</div>
 				
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
-						<li class="active">
-							<a href="/logout">Logout</a>
-						</li>
+
 						<li>
 						</li>
 						<li>
-							<a href="/prueba">Play!</a>
+							<a href="/play">Play!</a>
 						</li>
 						<li class="dropdown">
 							 <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Options<strong class="caret"></strong></a>
@@ -56,28 +54,13 @@
 					</ul>
 
 					<ul class="nav navbar-nav navbar-right">
+						<li class="active">
+							<a>Username: {{username}}</a>
+						</li>
 						<li>
-							<a href="#">Link</a>
+							<a href="/logout">Logout</a>
 						</li>
-						<li class="dropdown">
-							 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown<strong class="caret"></strong></a>
-							<ul class="dropdown-menu">
-								<li>
-									<a href="#">Action</a>
-								</li>
-								<li>
-									<a href="#">Another action</a>
-								</li>
-								<li>
-									<a href="#">Something else here</a>
-								</li>
-								<li class="divider">
-								</li>
-								<li>
-									<a href="#">Separated link</a>
-								</li>
-							</ul>
-						</li>
+
 					</ul>
 				</div>
 				
@@ -90,34 +73,20 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/scripts.js"></script>
 	<h1>Adding a new Question</h1> 
-	<div class="forma">
-	<form class="login-forma" method="post"> 
-		<table> 
-			<tr> <td class="label">Question</td> 
-				<td> <input type="text" name="question" value="{{question}}" placeholder="Your question ..."> </td> 
-				<td class="error"> {{question_error}} </td> 
-			</tr> 
-			<tr> <td class="label"> First Option </td> 
-				<td> <input type="text" name="firstopt" value="{{firstopt}}"> </td> 
-				<td class="error"> {{firstopt_error}}</td>
-			</tr> 
-			<tr> <td class="label"> Second Option </td>
-				<td> <input type="text" name="secondopt" value="{{secondopt}}"> </td> 
-				<td class="error"> {{secondopt_error}} </td> 
-			</tr>
-			<tr> <td class="label"> Third Option </td>
-				<td> <input type="text" name="thirdopt" value="{{thirdopt}}"> </td> 
-				<td class="error"> {{thirdopt_error}} </td> 
-			</tr>
-			<tr> <td class="label"> Theme </td>
-				<td> <input type="text" name="theme" value="{{theme}}"> </td> 
-				<td class="error"> {{theme_error}} </td> 
-			</tr> 
-			<tr> <td class="label"> Correct Option </td>
-				<td> <input type="text" name="correct" value="{{correct}}"> </td> 
-				<td class="error"> {{correct_error}} </td> 
-			</tr>
-		</table> 
+	<div class="form">
+	<form class="login-form" method="post"> 
+		<input type="text" name="question" value="{{question}}" placeholder="Question">
+				<div class="error"> {{question_error}} </div> 
+				 <input type="text" name="firstopt" value="{{firstopt}}"  placeholder="First Option">
+				<div class="error"> {{firstopt_error}}</div>
+		<input type="text" name="secondopt" value="{{secondopt}}" placeholder="Second Option"> 
+				<div class="error"> {{secondopt_error}} </div> 
+		<input type="text" name="thirdopt" value="{{thirdopt}}" placeholder="Third Option">
+				<div class="error"> {{thirdopt_error}} </div> 
+		<input type="text" name="theme" value="{{theme}}" placeholder="Theme">
+				<div class="error"> {{theme_error}} </div> 
+		<input type="text" name="correct" value="{{correct}}" placeholder="Correct Option">
+				<div class="error"> {{correct_error}} </div> 
 		<button> Add </button>
 	</form> 
 </div>
