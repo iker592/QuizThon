@@ -23,13 +23,14 @@ class InsertHandler(session_module.BaseSessionHandler):
 	def write_form (self, question="", firstopt="", secondopt="",thirdopt="", question_error="", firstopt_error="",	secondopt_error="", thirdopt_error="",correct="",correct_error="",theme="",theme_error=""):
 		tem_values= {"question" :
 		question,"firstopt" : firstopt,
-		"secondopt" : secondopt,"thirdopt" : thirdopt,
+		"secondopt" : secondopt,
+		"thirdopt" : thirdopt,
 		"question_error" : question_error,
 		"firstopt_error" : firstopt_error,
 		"secondopt_error" : secondopt_error,
 		"thirdopt_error" : thirdopt_error,
 		"correct" : correct,
-		"correct_error" : correct,
+		"correct_error" : correct_error,
 		"theme" : theme,
 		"theme_error" : theme_error}
 		template = JINJA_ENVIRONMENT.get_template('insert.html')
@@ -61,6 +62,8 @@ class InsertHandler(session_module.BaseSessionHandler):
 		firstopt_error = ""
 		secondopt_error = "" 
 		thirdopt_error = ""
+		correct_error = ""
+		theme_error = ""
 		question=""
 		error = False
 		if not valid_question(u_question):
@@ -75,8 +78,14 @@ class InsertHandler(session_module.BaseSessionHandler):
 		if not valid_question(u_thirdopt):
 			thirdopt_error = "Wrong type of answer in third option!"
 			error = True
+		if not valid_question(u_correct):
+			correct_error = "Wrong type of correct answer!"
+			error = True
+		if not valid_question(u_theme):
+			theme_error = "Wrong type of theme!"
+			error = True
 		if error:
-			self.write_form(sani_question, sani_firstopt, sani_secondopt, thirdopt_error,question_error, firstopt_error, secondopt_error, thirdopt_error)
+			self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt,question_error, firstopt_error, secondopt_error, thirdopt_error,sani_correct,correct_error,sani_theme,theme_error)
 		else:
 			question= Question.query(Question.question==u_question).count()
 			if question==0:

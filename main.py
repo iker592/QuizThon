@@ -154,13 +154,15 @@ class FillThemeHandler(session_module.BaseSessionHandler):
 				for finQ in finQlist:
 					count=count+finQ.corrects
 				count=count+self.session.get('correctAnswer')
-				totalAnswered=finQlist.count() * listaPreguntasTheme.count() +finQlist.count()
+				totalAnswered=(finQlist.count() * listaPreguntasTheme.count()) +listaPreguntasTheme.count()
 				if totalAnswered>0:
 					percentage=count/totalAnswered
+#				else:
+#					percentage=count/(self.session.get('correctAnswer')+self.session.get('incorrectAnswer'))
+#					logging.info("porcentaje 0")
+					percentTwoDecimals = float("{0:.2f}".format(percentage))
 				else:
-					percentage=count/(self.session.get('correctAnswer')+self.session.get('incorrectAnswer'))
-					logging.info("porcentaje 0")
-				percentTwoDecimals = float("{0:.2f}".format(percentage))
+					percentTwoDecimals=0
 
 
 
@@ -171,8 +173,8 @@ class FillThemeHandler(session_module.BaseSessionHandler):
 				for ft in finQGlobalList:
 					countGlobal=countGlobal+ft.corrects
 					countIncorGlobal=countIncorGlobal+ft.incorrects
-				#countGlobal=countGlobal+self.session.get('correctAnswer')
-				#countIncorGlobal=countIncorGlobal+self.session.get('incorrectAnswer')
+				countGlobal=countGlobal+self.session.get('correctAnswer')
+				countIncorGlobal=countIncorGlobal+self.session.get('incorrectAnswer')
 				logging.info("countGlobal %s" %countGlobal)
 				totalAnsweredGlobal=countGlobal+countIncorGlobal
 				if totalAnsweredGlobal>0:
@@ -183,8 +185,7 @@ class FillThemeHandler(session_module.BaseSessionHandler):
 				logging.info("totalAnsweredGlobal %s" %totalAnsweredGlobal)
 				percentTwoDecimalsGlobal = float("{0:.2f}".format(percentageGlobal))
 
-
-				self.response.out.write("<h3>You answered all the questions within this theme!</h3><h2> Score: "+ str(self.session.get('correctAnswer'))+"/"+str(listaPreguntasTheme.count()) +"</h2> <h2>Right Guess Percentage: "+str(percentTwoDecimals)+"</h2><h2>Right Global Guess Percentage: "+str(percentTwoDecimalsGlobal)+"</h2><h3>Try with another another one!</h3>" )
+				self.response.out.write("<h3>You answered all the questions within this theme!</h3><h2>Quiz Score: "+ str(self.session.get('correctAnswer'))+"/"+str(listaPreguntasTheme.count()) +"</h2> <h2>"+self.request.get('theme')+" Right Guess Percentage: "+str(percentTwoDecimals)+"</h2><h2>Global Right Guess Percentage: "+str(percentTwoDecimalsGlobal)+"</h2><h3>Try with another another one!</h3>" )
 				self.session['correctAnswer']=0
 				self.session['incorrectAnswer']=0
 		else:
