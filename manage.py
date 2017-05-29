@@ -22,6 +22,7 @@ class ManageHandler(session_module.BaseSessionHandler):
 		template = JINJA_ENVIRONMENT.get_template('manage.html')
 		self.response.write(template.render(tem_values))
 	def get(self):
-		greeting = ('Hi, %s! <p>' %(self.request.get('username')))
-		self.write_form(self.request.get('username'))
-		#self.response.out.write('<h3>%s</h3>' %greeting)
+		if self.session.get('username'):
+			self.write_form(self.session.get('username'))
+		else:
+			self.redirect('/')

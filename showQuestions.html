@@ -1,28 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Manage</title>
-
+<html> 
+<head> 
+	<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> 
+	<title>Questions</title> 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<script>
-		function validarEmail(email)
-		{$("#erroremail").html('Procesando...');
-		$.ajax("/comprobar",
-			{"type": "post",
-			"data":{"email":email},
-			"success": function(result) {
-			$("#erroremail").html(result);},
-			"error": function(result)
-					{ console.error("Se ha producido un error:", result);}, "async": true })}
-	</script>
-  </head>
-  <body>
+
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+
+</head> 
+<body> 
     <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-12">
@@ -31,7 +33,7 @@
 					 
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
 						 <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
-					</button> <a class="navbar-brand" >QuizGame</a>
+					</button> <a class="navbar-brand" href="/manage">QuizGame</a>
 				</div>
 				
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -73,14 +75,34 @@
 			</nav>
 		</div>
 	</div>
+
+	<div class="login-pagecita">
+		<div class="forma">
+			<div class="login-forma" >
+					<table>
+					  <tr>
+					    <th>Question</th>
+					    <th>Theme</th>
+					    <th>Correct</th>
+					  </tr>
+					      {% for item in mylist %}
+					        {% if item %}
+							  <tr>
+							    <td>{{item.question}}</td>
+							    <td>{{item.theme}}</td>
+							    <td>{{item.correct}}</td>
+							  </tr>
+					        {% endif %}
+					      {% endfor %}
+					</table>
+			</div>
+
+		</div>
+	</div> 
+
 </div>
-	<div id="wrapper" style="text-align: center">    
-	    <div id="added" style="display: inline-block;">	<img src="/images/quiz.png" alt="Main Photo" ></div> 
-	</div>
-
-
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/scripts.js"></script>
-  </body>
+</body> 
 </html>

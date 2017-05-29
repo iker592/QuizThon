@@ -203,40 +203,49 @@ class PlayHandler(session_module.BaseSessionHandler):
 		self.response.write(template.render(tem_values))
 	def get(self):
 			logged_username=self.session.get('username')
+			logging.info("%s" %logged_username)
 #		if user:
 #			greeting = ('Logged as: %s <a href="%s">Finish session </a><br>' %(user.nickname(), users.create_logout_url('/')))
 			result=self.request.get('result')
 			nick=self.request.get('nick')
-			if (nick!=""):
+			if (self.request.get('nick')):
 			#	user = users.User(nick)
 				user_name=nick
 				guest="Nickname:"
 				self.session['nickname'] = user_name
 			#	logoutlink=users.create_logout_url('/bootstrap')
-			elif (logged_username!=""):
+			elif (self.session.get('username')): #and self.session.get('username')
 				user_name=logged_username
+				logging.info("en el elif !!!%s" %user_name)
 				guest="Username:"
 			#	logoutlink="/logout"
 			else:
-				self.response.redirect('/')
+				self.redirect('/')
+				return
 			questionQuery= Question.query()
 			questionQueryThemes = ndb.gql("SELECT DISTINCT theme FROM Question ") #+ "WHERE theme = :1", self.request.get('theme'))
-#			self.response.out.write('<h2>%s</h2>' %greeting)  	
 			self.write_form(questionQuery,questionQueryThemes,result,user_name,"/logout",guest)
 
-#		else:
-#			self.redirect(users.create_login_url(self.request.uri))
-#	def post(self):
-		#question=self.request.get('questions')
-
-		#self.redirect("/answer?question=%s" %question)
-
-
+class ShowQuestionsHandler(session_module.BaseSessionHandler):
+	def write_form (self, mylist,username):
+		tem_values = {"mylist" : mylist,"username":username}
+		template = JINJA_ENVIRONMENT.get_template('showQuestions.html')
+		self.response.write(template.render(tem_values))
+	def get(self):
+			if (self.session.get('username')): 
+				logged_username=self.session.get('username')
+				questionQuery= Question.query()
+				self.write_form(questionQuery,logged_username)
+			else:
+				self.redirect('/')
+				return
 
 class ComprobarEmail(webapp2.RequestHandler):
 	def post(self):
+		EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
+		emailOK=EMAIL_RE.match(self.request.get('email'))
 		user = Visitante.query(Visitante.email==self.request.get('email')).count()
-		if user==0 and self.request.get('email')!="":
+		if user==0 and self.request.get('email')!="" and emailOK:
 			self.response.out.write("<span style='color:green'>Email -> " +self.request.get('email')+ " <- Correcto</span>")
 		else:
 			self.response.out.write("<span style='color:red'>Este email ya esta registrado o no es valido</span>")
@@ -346,6 +355,7 @@ app = webapp2.WSGIApplication([
     ('/checkanswer', CheckAnswerHandler),
     ('/fillanswer', FillAnswerHandler),
     ('/filltheme', FillThemeHandler),
+    ('/showQuestions', ShowQuestionsHandler),
 
     ('/checkAdd', AddedThemeHandler),
     ('/comprobar',ComprobarEmail)

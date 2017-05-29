@@ -37,7 +37,7 @@ class LoginHandler(session_module.BaseSessionHandler):
 		user= Visitante.query(Visitante.nombre==user_username, Visitante.password==user_password).count()
 		if user==1:
 			self.session['username'] = user_username
-			self.redirect("/manage?username=%s" % user_username)
+			self.redirect("/manage")
 		else:
 			error="Incorrect Username or password!"
 			self.write_form(sani_username,"",error)
