@@ -70,8 +70,9 @@
 	<div class="login-page">
 	  <div class="form">
 	    <form class="login-form" method="post">
-	      <input type="text" name="username" value="{{username}}" placeholder="name"/><div class="error"> {{username_error}} </div>
-	      <input type="password" name="password" value="{{password}}" autocomplete="off" placeholder="password"/><div class="error"> 
+	      <div class="error" style="color:red"> {{error}} </div>
+	      <input type="text" name="username" value="{{username}}" placeholder="name"/>
+	      <input type="password" name="password" value="{{password}}" autocomplete="off" placeholder="password"/> 
 	      <button>Login</button>
 	      <p>Not registered? <a href="/signup">Create an account</a></p>
 	    </form>

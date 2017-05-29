@@ -236,6 +236,13 @@ class ComprobarEmail(webapp2.RequestHandler):
 		else:
 			self.response.out.write("<span style='color:red'>Este email ya esta registrado o no es valido</span>")
 
+class AddedThemeHandler(session_module.BaseSessionHandler):
+	def post(self):
+		if self.session.get('added')==True:
+			self.response.out.write("<h2>Question Added</h2>")
+			self.session['added']=False
+		else:
+			self.response.out.write("<h2>Try again</h2>")
 
 class LogoutSesionHandler(session_module.BaseSessionHandler):
 	def get(self):
@@ -335,5 +342,6 @@ app = webapp2.WSGIApplication([
     ('/fillanswer', FillAnswerHandler),
     ('/filltheme', FillThemeHandler),
 
+    ('/checkAdd', AddedThemeHandler),
     ('/comprobar',ComprobarEmail)
 ], config=session_module.myconfig_dict, debug=True)

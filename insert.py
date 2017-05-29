@@ -4,7 +4,7 @@ import cgi
 import jinja2
 import os
 from google.appengine.api import users
-
+import time
 import session_module
 from webapp2_extras import sessions 
 
@@ -37,9 +37,11 @@ class InsertHandler(session_module.BaseSessionHandler):
 		self.response.write(template.render(tem_values))
 
 	def get(self):
+		self.session['added']=False
 		self.write_form()
 
 	def post(self):
+		self.session['added']=False
 		def escape_html(s):
 			return cgi.escape(s, quote=True)
 		QUESTION_RE = re.compile(r"^[a-zA-Z0-9_-]+( [a-zA-Z0-9_?]+)*$")
@@ -97,8 +99,10 @@ class InsertHandler(session_module.BaseSessionHandler):
 				q.theme=u_theme
 				q.correct=u_correct
 				q.put()
+				self.session['added']=True
+				#self.response.out.write ("<div id='myClass'>Question: %s  added, add as many as you want</div>" %u_question)
+				time.sleep(1) 
 				self.write_form()
-				self.response.out.write ("<h3>Question: %s  added, add as many as you want</h3>" %u_question)
 			else:
 				self.write_form(sani_question, sani_firstopt, sani_secondopt, thirdopt_error,question_error, firstopt_error, secondopt_error, thirdopt_error)
 				self.response.out.write ("<h3>Question: %s <p> was already inserted</h3>" %u_question)

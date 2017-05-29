@@ -13,6 +13,16 @@
 			$("#erroremail").html(result);},
 			"error": function(result)
 					{ console.error("Se ha producido un error:", result);}, "async": true })}
+
+		function checkAdd()
+		{$("#added").html('Processing...');
+		$.ajax("/checkAdd",
+			{"type": "post",
+			"data":{"email":"cxkk"},
+			"success": function(result) {
+			$("#added").html(result);},
+			"error": function(result)
+					{ console.error("There has been an error:", result);}, "async": true })}
 	</script>
 </head> 
 <body>
@@ -72,22 +82,24 @@
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/scripts.js"></script>
-	<h1>Adding a new Question</h1> 
-	<div class="form">
-	<form class="login-form" method="post"> 
+	<div id="wrapper" style="text-align: center">    
+	    <div id="added" style="display: inline-block;">	<h2>Adding a new Question</h2></div> 
+	</div>
+	<div class="form" >
+	<form class="login-form" method="post" > 
 		<input type="text" name="question" value="{{question}}" placeholder="Question">
-				<div class="error"> {{question_error}} </div> 
+				<div class="error" style="color:red"> {{question_error}} </div> 
 				 <input type="text" name="firstopt" value="{{firstopt}}"  placeholder="First Option">
-				<div class="error"> {{firstopt_error}}</div>
+				<div class="error" style="color:red"> {{firstopt_error}}</div>
 		<input type="text" name="secondopt" value="{{secondopt}}" placeholder="Second Option"> 
-				<div class="error"> {{secondopt_error}} </div> 
+				<div class="error" style="color:red"> {{secondopt_error}} </div> 
 		<input type="text" name="thirdopt" value="{{thirdopt}}" placeholder="Third Option">
-				<div class="error"> {{thirdopt_error}} </div> 
+				<div class="error" style="color:red"> {{thirdopt_error}} </div> 
 		<input type="text" name="theme" value="{{theme}}" placeholder="Theme">
-				<div class="error"> {{theme_error}} </div> 
+				<div class="error" style="color:red"> {{theme_error}} </div> 
 		<input type="text" name="correct" value="{{correct}}" placeholder="Correct Option">
-				<div class="error"> {{correct_error}} </div> 
-		<button> Add </button>
+				<div class="error" style="color:red"> {{correct_error}} </div> 
+		<button onClick="checkAdd()"> Add </button>
 	</form> 
 </div>
 </body> 

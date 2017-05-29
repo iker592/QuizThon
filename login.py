@@ -19,19 +19,25 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 from models import *
 
 class LoginHandler(session_module.BaseSessionHandler):
-	def write_form (self, username="", password="", verify="", email="", username_error="", password_error="", verify_error="", email_error=""):
+	def write_form (self, username="", password="", error=""):
 		#self.response.out.write(login_form % {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error})
-		tem_values = {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error}
+		#tem_values = {"username" : username,"password" : password, "verify" : verify,"email" : email,"username_error" : username_error,"password_error" : password_error,"verify_error" : verify_error,"email_error" : email_error}
+		tem_values = {"username" : username,"password" : password,"error":error}
 		template = JINJA_ENVIRONMENT.get_template('login.html')
 		self.response.write(template.render(tem_values))
 	def get(self):
 		self.write_form()
 	def post(self):
+		def escape_html(s):
+			return cgi.escape(s, quote=True)
 		user_username = self.request.get('username')
 		user_password = self.request.get('password')
+		sani_username = escape_html(user_username)
+
 		user= Visitante.query(Visitante.nombre==user_username, Visitante.password==user_password).count()
 		if user==1:
 			self.session['username'] = user_username
 			self.redirect("/manage?username=%s" % user_username)
 		else:
-			self.redirect('/login')
+			error="Incorrect Username or password!"
+			self.write_form(sani_username,"",error)
