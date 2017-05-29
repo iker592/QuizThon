@@ -75,6 +75,7 @@ class SignupHandler(session_module.BaseSessionHandler):
 				u.email=user_email
 				u.password=user_password
 				u.put()
+				self.session['username']=user_username
 				self.redirect("/manage?username=%s" % user_username)
 			else:
 				self.redirect("/manage")

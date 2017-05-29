@@ -58,7 +58,7 @@ class FillAnswerHandler(webapp2.RequestHandler):
 			sani_thirdopt = escape_html(question.third)
 			self.write_form(sani_question, sani_firstopt, sani_secondopt, sani_thirdopt, firstopt_error, secondopt_error, thirdopt_error)
 		else:
-			self.response.out.write ("damn no questions bruh")
+			self.response.out.write ("")
 import logging
 class FillThemeHandler(session_module.BaseSessionHandler):
 	def write_form (self, question="", firstopt="", secondopt="", thirdopt="", firstopt_error="", secondopt_error="", thirdopt_error=""):
@@ -194,7 +194,7 @@ class FillThemeHandler(session_module.BaseSessionHandler):
 				self.session['correctAnswer']=0
 				self.session['incorrectAnswer']=0
 		else:
-			self.response.out.write ("damn no questions bruh")
+			self.response.out.write ("")
 
 class PlayHandler(session_module.BaseSessionHandler):
 	def write_form (self, mylist,mylistThemes,result,nick,logoutlink,guest):
