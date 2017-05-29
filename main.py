@@ -134,8 +134,12 @@ class FillThemeHandler(session_module.BaseSessionHandler):
 				logging.info("End, question_s: %s"  %question_s)
 				if self.session.get('username'):
 					email=self.session.get('username')
+					#url="<a href='/manage'>Go to Main Page</a>"
+					url="<a href='/manage'><button>Go to Main Page</button></a>"
 				else:
 					email=self.session.get('nickname')
+					#url="<a href='/logout'>End Session</a>"
+					url="<a href='/logout'><button>End Session</button></a>"
 			#	fList=FinishedThemes.query(FinishedThemes.theme==self.request.get('theme'), FinishedThemes.email==email)
 			#	if fList.count()>0:
 			#		f=fList.get()
@@ -164,7 +168,7 @@ class FillThemeHandler(session_module.BaseSessionHandler):
 				else:
 					percentTwoDecimals=0
 
-
+				percentTwoDecimals=percentTwoDecimals*100
 
 				finQGlobalList= FinishedThemes.query(FinishedThemes.email==email)
 				PreguntasRespondidasList= VisiQuest.query(VisiQuest.email==email)
@@ -184,8 +188,9 @@ class FillThemeHandler(session_module.BaseSessionHandler):
 					logging.info("porcentaje global 0")
 				logging.info("totalAnsweredGlobal %s" %totalAnsweredGlobal)
 				percentTwoDecimalsGlobal = float("{0:.2f}".format(percentageGlobal))
+				percentTwoDecimalsGlobal=percentTwoDecimalsGlobal*100
 
-				self.response.out.write("<h3>You answered all the questions within this theme!</h3><h2>Quiz Score: "+ str(self.session.get('correctAnswer'))+"/"+str(listaPreguntasTheme.count()) +"</h2> <h2>"+self.request.get('theme')+" Right Guess Percentage: "+str(percentTwoDecimals)+"</h2><h2>Global Right Guess Percentage: "+str(percentTwoDecimalsGlobal)+"</h2><h3>Try with another another one!</h3>" )
+				self.response.out.write("<h3>You answered all the questions of this theme!</h3><h2>Quiz Score: "+ str(self.session.get('correctAnswer'))+"/"+str(listaPreguntasTheme.count()) +"</h2> <h2>"+self.request.get('theme')+" Right Guess Percentage: "+str(percentTwoDecimals)+"%</h2><h2>Global Right Guess Percentage: "+str(percentTwoDecimalsGlobal)+"%</h2><h3>"+url+" or Select another theme!!</h3>" )
 				self.session['correctAnswer']=0
 				self.session['incorrectAnswer']=0
 		else:
